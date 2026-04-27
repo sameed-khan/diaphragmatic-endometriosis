@@ -1,0 +1,49 @@
+# Commit code, not data or artifacts.
+#
+# This repo tracks the *pipeline* that produces data/, plus a few small
+# coordination files (data/CLAUDE.md, data/README.md, data/splits.json,
+# data/patient_id_mapping.csv). Everything else under data/ is a deterministic
+# function of upstream input + those files — regenerate, don't commit.
+
+# --- Python ---
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# --- Virtual environments ---
+.venv/
+
+# --- Local IDE / agent state ---
+.claude/
+
+# --- SLURM stdout/stderr (symlinked into /scratch) ---
+logs
+
+# --- EDA: code lives here but everything is in flux; revisit later ---
+eda/
+
+# --- Data tree: bulk artifacts not committed ---
+# Volumes and masks (~19 GB on disk)
+data/raw/
+data/lesion_masks/
+data/liver_masks/
+data/liver_rois/
+
+# Pipeline runtime byproducts (logs, timing, VRAM probes)
+data/_pipeline/
+
+# Per-patient metadata files — large, regeneratable from scripts/migrate_to_home.py
+data/manifest.csv
+data/sidecars.jsonl
+
+# Future derivative trees (cropped, normalized, predictions, etc.) — pre-emptive
+data/cropped_*/
+data/normalized_*/
+data/predictions/
+
+# --- OS / editor noise ---
+.DS_Store
+*.swp
