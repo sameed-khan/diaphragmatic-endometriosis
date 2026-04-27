@@ -1,0 +1,53 @@
+{
+  "adjectives": [
+    "amber", "arctic", "azure", "bold", "bright", "bronze", "calm", "cedar",
+    "clear", "cobalt", "coral", "crisp", "dusk", "dusty", "eager", "ember",
+    "faded", "fern", "fierce", "flint", "foggy", "frost", "gentle", "gilt",
+    "glass", "golden", "granite", "hazy", "hollow", "hushed", "iron", "ivory",
+    "jade", "keen", "lapis", "lemon", "light", "lilac", "linen", "lunar",
+    "maple", "marble", "marsh", "misty", "mossy", "noble", "oaken", "ochre",
+    "olive", "opal", "pale", "pearl", "pine", "plain", "plum", "polar",
+    "proud", "quiet", "rapid", "raven", "reed", "rocky", "rowan", "ruby",
+    "russet", "sage", "sandy", "scarlet", "shadow", "sharp", "shell", "silent",
+    "silver", "slate", "slim", "solar", "spice", "stark", "steady", "steep",
+    "stone", "storm", "stout", "subtle", "sunny", "swift", "tawny", "teak",
+    "tender", "terra", "thick", "thorn", "tidal", "timber", "topaz", "velvet",
+    "vivid", "warm", "waxen", "weary", "wheat", "wild", "willow", "windy",
+    "wintry", "woven", "young", "zinc", "ashen", "blush", "brisk", "chalk",
+    "chrome", "citrus", "clay", "copper", "dapple", "drift", "dusky", "earthy"
+  ],
+  "animals": [
+    "badger", "bear", "bison", "bobcat", "bunny", "camel", "cat", "cheetah",
+    "chipmunk", "clam", "cobra", "condor", "cougar", "coyote", "crane", "crow",
+    "deer", "dingo", "dolphin", "donkey", "dove", "dragon", "duck", "eagle",
+    "eel", "egret", "elk", "falcon", "ferret", "finch", "flamingo", "fox",
+    "frog", "gazelle", "gecko", "goat", "goose", "gorilla", "grouse", "gull",
+    "hare", "hawk", "hedgehog", "heron", "horse", "hound", "ibis", "iguana",
+    "impala", "jackal", "jaguar", "jay", "kestrel", "kite", "koala", "lark",
+    "lemur", "leopard", "lion", "lizard", "llama", "lobster", "lynx", "macaw",
+    "magpie", "marten", "mink", "moose", "moth", "mouse", "mule", "narwhal",
+    "newt", "ocelot", "osprey", "otter", "owl", "ox", "panda", "panther",
+    "parrot", "pelican", "penguin", "pigeon", "pike", "pony", "puma", "quail",
+    "rabbit", "raccoon", "ram", "raven", "robin", "salmon", "seal", "shark",
+    "shrew", "skunk", "sloth", "snail", "snake", "sparrow", "squid", "stag",
+    "stork", "swan", "tern", "tiger", "toad", "trout", "turtle", "viper",
+    "vulture", "walrus", "wasp", "whale", "wolf", "wombat", "wren", "yak"
+  ],
+  "nouns": [
+    "arch", "barn", "basin", "beach", "blade", "blaze", "bluff", "bolt",
+    "bower", "braid", "briar", "brick", "bridge", "brook", "cairn", "candle",
+    "canyon", "cape", "cask", "cave", "chasm", "cliff", "cloud", "coast",
+    "cove", "creek", "crest", "crown", "delta", "dome", "dune", "fable",
+    "field", "flame", "flare", "forge", "frost", "glade", "gleam", "glen",
+    "gorge", "grain", "grove", "gulch", "haven", "heath", "hedge", "hill",
+    "hinge", "knoll", "lake", "lance", "ledge", "marsh", "meadow", "mesa",
+    "mill", "mist", "moat", "mound", "notch", "oasis", "pass", "patch",
+    "path", "peak", "pier", "pine", "plank", "plaza", "pond", "port",
+    "post", "prairie", "quartz", "rain", "ranch", "ravine", "reef", "ridge",
+    "river", "road", "rock", "ruins", "sage", "sands", "shelf", "shoal",
+    "shore", "slope", "spark", "spire", "spring", "spur", "stone", "strait",
+    "stream", "summit", "terrace", "thicket", "tide", "tower", "trail", "vale",
+    "valley", "vault", "verge", "vista", "weld", "wharf", "woods", "yard",
+    "zenith", "hollow", "fjord", "butte", "rapid", "falls"
+  ]
+}
