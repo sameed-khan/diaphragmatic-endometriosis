@@ -1,248 +1,318 @@
-# Diaphragmatic Endometriosis EDA Plan
+# Diaphragmatic Endometriosis EDA Plan (v2 — 608-volume cohort)
 
-**Date:** 2026-04-25
-**Status:** Awaiting review
+**Date:** 2026-04-27
+**Status:** Drafted, awaiting first-pass execution
+**Supersedes:** v1 (131-volume, positive-only) — completed and archived in git history
 
 ---
 
-## Dataset Summary (from initial exploration)
+## 1. Dataset Summary (post-Phase 1 migration)
 
 | Property | Value |
 |---|---|
-| Total local volumes | 131 |
-| Unique patients | 113 |
-| Patients with WATER sequence variant | 25 (so 25 volumes are secondary scans) |
-| Mask format | 3D Slicer segmentation (NIfTI + CSV metadata) |
-| Segments per mask | 2 (all but 1: `ANON0F96D8A953EA` has only Segment_1) |
-| Segment meaning | Segment_1 = superior border of liver; Segment_2 = hepatorenal space. Both are endometriosis lesions -- anatomical location distinction only. **Merge to single binary mask for training.** |
-| Local negatives | 0 (all negatives on HPC) |
-| HPC negatives | ~1000 (not yet converted to NIfTI) |
+| Total transferred volumes | 608 |
+| Cohort split | 108 positive · 500 negative |
+| Bucket split | 122 holdout · 486 cross-validation (5 folds, seed=42) |
+| Manufacturer / field | GE / 1.5 T (uniform) |
+| Sequence | 3D Dixon LAVA coronal `WATER` (`DERIVED\PRIMARY\DIXON\WATER\MAGNITUDE`) |
+| In-plane shape | 512 × 512 (uniform) |
+| Through-plane (axis 1) slice count | 52–160 (varies; ~10 distinct values, mode 120) |
+| Slice thickness | 2.20–6.94 mm (Artist median 3.0; Explorer median 3.6) |
+| Scanner models | SIGNA Artist (369) · SIGNA Explorer (239) |
+| Series descriptions | 6 variants, dominated by `WATER: COR LAVA DIAF.` (478) |
+| BodyPart codes | 7 variants (ABDOMEN, PELVIS, UTERUS, LIVER, ABDOMENPELVIS, …) |
+| PatientSex | F=607, M=1 (single male in positives) |
+| Lesion masks | 108 (positives only) — destructively binarized in place to {0,1}; see `scripts/binarize_lesion_masks.py` and `eda/outputs/binarize_lesion_masks_report.csv` |
+| Liver masks | 608 (TotalSegmentator `total_mr`, `task=liver`); voxel counts 338 k–1.94 M |
+| Liver ROIs | 608 (20 mm anisotropic dilation of liver masks; per-NIfTI zooms) |
+| Soft-negatives | 5 of 608 transferred (52 others in phase2_unsupervised, out of scope) |
 
-**Resolved questions:**
-- Segment_1 vs Segment_2 = anatomical location of lesion (superior liver border vs hepatorenal space). No quality/type distinction. Merge into binary mask.
-- `ANON0F96D8A953EA` has only Segment_1 -- patient simply had lesion(s) in only one location.
+**Sources of truth (do not glob):**
+- `data/manifest.csv` filtered to `transferred_to_home == True` → 608 rows
+- `data/sidecars.jsonl` → full BIDS sidecars
+- `data/splits.json` → frozen fold assignments
+
+## 2. Policy decisions (locked for this round)
+
+- **Holdout in EDA.** Holdout (122) is included in all aggregates and modeling decisions because the 608-cohort is treated as the *target deployment population* for this single-center clinical use case. Holdout is excluded only from training and hyperparameter tuning.
+- **Modeling target.** 2.5D detection: 3-channel slice-stack input → 2D bounding boxes on the center slice. Boxes derived from connected components of binarized lesion masks per slice.
+- **Mask semantics.** Binary {0,1}. No per-anatomic-location classes. Lesions = any nonzero voxel. (Destructive binarization handled separately.)
+- **Soft-negatives.** Treated as hard negatives — no special downstream handling beyond a brief sanity check.
+- **Phase 2 SSL pool.** Strictly out of scope for this EDA.
+- **Compute.** 20 CPUs, parallel via `ProcessPoolExecutor(max_workers=16)`.
 
 ---
 
-## EDA Sections
+## 3. Sections
 
-### 1. Volume Geometry & Spacing Consistency
+### Section 1 — Volume Geometry & Acquisition Heterogeneity
 
-**Goal:** Determine if all volumes share the same voxel spacing and dimensions, or if resampling is needed.
+**Goal:** Confirm in-plane uniformity, characterize through-plane variability, identify outliers, decide whether resampling is needed.
+
+**Tasks (608 volumes, header-only reads, parallel):**
+- Per volume: shape, voxel zooms, affine, orientation codes (`nib.aff2axcodes`), determinant sign
+- Identify the through-plane axis per volume (axis whose zoom matches `SliceThickness`); confirm it is consistently axis 1 in this cohort
+- Cross-validate header zooms vs `manifest.slice_thickness_mm` and `sidecar.SpacingBetweenSlices`; flag mismatches
+- Tabulate distributions stratified by `cohort × bucket × scanner_model × series_description`
+- Flag outliers: thickness > 5 mm, slice count < 60, atypical orientation
+- Recompute FOV (mm) per axis and check FOV consistency
+
+**Decision points:**
+- Single uniform target spacing (e.g., 0.7 × 3.0 × 0.7 mm)? Or train at native and only force a fixed input crop?
+- Through-plane resampling for the variable-N axis to a common slice count, or pad/crop in fixed window?
+
+---
+
+### Section 2 — Mask Binarization Verification
+
+**Goal:** Confirm the destructive binarization left the 108 lesion masks clean and lossless w.r.t. nonzero footprint.
 
 **Tasks:**
-- [ ] Load all 131 volumes, extract: shape, voxel spacing (pixdim), affine matrix, orientation (e.g., RAS/LPS)
-- [ ] Tabulate and visualize distributions of (x, y, z) spacing
-- [ ] Tabulate and visualize distributions of volume dimensions (nx, ny, nz)
-- [ ] Identify outliers in spacing or dimensions
-- [ ] Check if WATER sequence volumes have different geometry from the primary scans
-- [ ] Determine the through-plane (z) slice thickness -- critical for deciding 2.5D slice count
-- [ ] **Decision point:** Do we need to resample to a common spacing? What target spacing?
-
-**Rationale:** Anisotropic voxel spacing (e.g., 0.5mm in-plane, 3-5mm through-plane) is common in clinical MRI and directly impacts whether 2.5D or 3D is appropriate. If z-spacing is thick (3-5mm), adjacent slices already cover significant territory and 3-channel 2.5D (center +/- 1) may suffice.
+- For each lesion_mask: confirm `np.unique == {0,1}`, dtype `uint8`, shape and affine still match raw volume
+- Cross-check `total_nonzero_after == total_nonzero_before` from the binarization report (lossless on union of label 1 and label 2)
+- No empty masks (every positive must have ≥ 1 lesion voxel)
 
 ---
 
-### 2. Mask Binarization Verification
+### Section 3 — Liver-ROI Containment Analysis (new in v2)
 
-**Goal:** Confirm that merging Segment_1 (superior liver border) and Segment_2 (hepatorenal space) into a single binary mask is clean -- no overlaps, no unexpected label values.
+**Goal:** Decide whether the 20 mm-dilated liver ROI is a viable hard crop. If lesions ever fall outside, dilation must widen.
 
-**Decision: RESOLVED** -- Merge both segments into a single binary mask (any nonzero voxel = lesion).
+**Tasks (108 positive triples: raw + lesion_mask + liver_roi, parallel):**
+- For each positive: fraction of lesion voxels inside `liver_mask`, inside `liver_roi`, outside both
+- Identify cases with any lesion voxels outside `liver_roi` → crop failures (worth investigating individually)
+- For each contained lesion: smallest bbox inside ROI containing all lesion voxels with N-mm margin (N ∈ {0, 5, 10, 20}); summarise resulting per-volume crop size
+- Per-volume `liver_roi_voxels / total_voxels` ratio (cropping savings) and the resulting in-plane / through-plane patch shape
+- Render 5 worst-containment cases (mid-coronal slice with lesion + ROI overlay)
+
+**Decision points:**
+- Adopt liver_roi crop in pipeline? If <100 % containment, increase dilation (re-run `dilate_segmentations.py` with larger margin) or fall back to a different anatomic prior
+- Effective post-crop class-balance and per-volume input size
+
+---
+
+### Section 4 — Lesion Size & Morphology
+
+**Goal:** Characterize lesion 3D shape distribution to inform 2.5D stack depth, input resolution, and 2D bbox anchor priors.
+
+**Tasks (108 binarized masks, parallel):**
+- 3D connected components (26-connectivity) per mask
+- Per CC: voxel count, physical volume mm³, bbox extent (x,y,z) in voxels and mm, slices spanned along through-plane, centroid (voxel + mm)
+- Aggregate distributions: P5, P25, P50, P75, P95 for volume, max-extent, slices-spanned
+- Number of distinct lesions per patient
+- Categorize: micronodule (<5 mm max-extent), nodule (5–30 mm), plaque (>30 mm)
+- Smallest 10 lesions: bbox at native resolution and at typical detector input sizes (256, 384, 512)
+- Stratify size distribution by scanner_model and slice_thickness_bin (does thicker slicing under-detect small lesions?)
+
+**Decision points:**
+- Minimum 2.5D stack depth (informed by `slices_spanned` distribution)
+- Native-resolution vs downsample input
+- Anchor box scale priors
+
+---
+
+### Section 5 — Slice-Level Analysis & 2D Bounding Box Statistics (new in v2)
+
+**Goal:** Extract per-slice GT boxes; characterize their distribution to inform detector head design and slice-sampling strategy.
 
 **Tasks:**
-- [ ] For each mask NIfTI, extract the set of unique voxel values and confirm only {0, 1, 2} are present
-- [ ] Verify labels 1 and 2 never overlap spatially (no voxel assigned both labels)
-- [ ] Compute voxel counts per label value (1 vs 2) across all masks -- useful to know the anatomical distribution (superior border vs hepatorenal)
-- [ ] Count how many masks have only label 1, only label 2, or both
-- [ ] Binarize all masks (nonzero -> 1) for downstream analysis
+- **Positives (108):** for each positive volume, identify positive slices along through-plane axis; within each positive slice, 2D connected components → axis-aligned bboxes (`x,y,w,h` in voxels and mm)
+- Per-slice: number of boxes, per-box area, aspect ratio
+- Per-volume: total positive slices, fraction of total slices, gap structure (contiguous or scattered), per-slice box count
+- **Crop comparison:** repeat all of the above inside the liver_roi crop (Section 3); record positive-slice fraction with and without crop
+- **Negatives (500):** count slices contributed (no positives) — combined with positives to compute the global positive:negative slice ratio at training time
+- Smallest 2D box (pixels, mm²) → minimum resolution constraint
+- Aspect-ratio distribution → anchor design
 
-**Rationale:** Quick sanity check before treating all nonzero voxels uniformly. Also gives us a side statistic on the anatomical distribution of lesions across the cohort.
+**Decision points:**
+- 2.5D context window (3, 5, 7 slices)
+- Center-slice positive sampling vs any-slice-with-overlap sampling
+- Positive-slice oversampling ratio at the data loader
+- Anchor scales / aspect ratios
 
 ---
 
-### 3. Lesion Size & Morphology Statistics
+### Section 6 — Cohort Comparability & Shortcut-Learning Risk (new in v2)
 
-**Goal:** Characterize lesion dimensions to inform architecture choices (2.5D stack depth, input resolution, anchor sizes if doing detection).
+**Goal:** Surface any acquisition-metadata difference between positives and negatives that the model could exploit instead of learning lesion morphology.
 
 **Tasks:**
-- [ ] For each mask, compute connected components per label using `scipy.ndimage.label` or `cc3d`
-- [ ] Per connected component, compute:
-  - Voxel count
-  - Physical volume (mm^3, using voxel spacing)
-  - Bounding box dimensions in mm (x, y, z extent)
-  - Number of slices spanned in z-axis
-  - Centroid location (x, y, z) in physical and voxel coordinates
-- [ ] Aggregate statistics: min, max, median, mean, std, percentiles (5th, 25th, 75th, 95th) for each metric above
-- [ ] Distribution plots: histogram of lesion volumes, histogram of z-extent (number of slices), histogram of max in-plane diameter
-- [ ] Count number of distinct lesions per volume
-- [ ] **Critical question:** How many slices do lesions typically span? This directly determines the minimum 2.5D stack depth.
-- [ ] **Critical question:** What is the smallest lesion? Can it even be detected at typical downsampled resolutions?
+- For each of {`scanner_model`, `slice_thickness`, `series_description`, `body_part`, `patient_age`, `n_slices`, FOV_z, `pulse_sequence_name`, `repetition_time`, `echo_time`}: compute distribution per cohort
+- Statistical tests: KS / chi-squared as appropriate; report p-values and effect sizes (Cliff's δ for ordinal)
+- Cross-tabulate (`scanner_model × series_description × thickness_bin`): are positive and negative both populated in every stratum?
+- Flag any "positive-only" or "negative-only" stratum
 
-**Rationale:** Literature says diaphragmatic endometriosis lesions can be micronodules (<5mm), nodules, or plaques. With thick MRI slices, a <5mm lesion might span only 1 slice. If so, the center slice in 2.5D is all-or-nothing.
+**Decision points:**
+- Hard imbalance → consider rebalancing the negative pool (sample-weight at training, or excluding outlier strata)
+- Soft imbalance → instrument inference-time monitoring per stratum
 
 ---
 
-### 4. Lesion Location Analysis (Cropping Feasibility)
+### Section 7 — Intensity Statistics & Normalization
 
-**Goal:** Map where lesions sit within the volume to determine optimal pre-cropping strategy.
+**Goal:** Choose normalization strategy. Detect cohort-level intensity drift.
+
+**Tasks (608 volumes, parallel):**
+- Per volume: P0.5, P1, P5, P25, P50, P75, P95, P99, P99.5; mean, std
+- Per volume *inside liver_roi*: same percentiles (better proxy for the in-distribution intensity range the model sees)
+- **Lesion intensity** (positives, inside binary mask): same percentiles + lesion-vs-non-lesion-bg contrast
+- Stratify intensity stats by `cohort × scanner_model × thickness_bin`
+- Statistical test: are lesion-bg contrast and per-volume P99 different between cohorts? Between scanners?
+- Visualize: overlaid intensity histograms per scanner, per cohort
+
+**Decision points:**
+- Normalization method: percentile-clip → z-score (recommended for MR), percentile-clip → min-max, or z-score
+- Clip bounds (P1/P99 vs P0.5/P99.5)
+- Per-volume vs per-scanner-fitted normalization
+- Compute over full volume vs liver_roi only
+
+---
+
+### Section 8 — Liver Mask Quality Control (new in v2)
+
+**Goal:** Catch any TotalSegmentator failures before downstream pipeline trusts liver_masks/liver_rois.
 
 **Tasks:**
-- [ ] Plot lesion centroid locations in normalized volume coordinates (fraction of volume extent in each axis)
-- [ ] Create a 3D scatter plot or 2D projections of lesion centroids
-- [ ] Compute the bounding box that would contain ALL lesion centroids + some margin
-- [ ] For each volume, compute the lesion centroid position relative to the volume center
-- [ ] Determine if lesions cluster near the liver dome/right hemidiaphragm as expected (literature: 87.5% right-sided)
-- [ ] Investigate whether any lesions appear in unexpected locations (left diaphragm, anterior)
-- [ ] Estimate how much of the volume could be cropped away without losing any lesion voxels
-- [ ] **Decision point:** What crop region (in voxel or physical coords) captures 100% of lesions with margin?
+- Distribution of `liver_voxel_count` and physical liver volume (cm³) across 608 (5.7× range observed)
+- Identify outliers: bottom 10 and top 10 by physical volume
+- Per-volume: 3D connected components in liver_mask — flag any with >1 component (TotalSeg should produce a single connected liver)
+- Render mid-coronal-slice mask overlay PNG for the 20 size-outliers + 10 random middle-of-distribution cases → visual QC
+- Cross-check: for positive volumes, does the lesion centroid sit superior-to (above) the liver dome as expected anatomically?
 
-**Rationale:** Pre-cropping to the liver/diaphragm region is universally recommended by competition winners. This dramatically reduces background, improves class balance, and allows higher effective resolution.
+**Decision points:**
+- Manual exclusion list, or re-run TotalSegmentator with different settings, or accept
 
 ---
 
-### 5. Intensity Statistics & Normalization
+### Section 9 — Volume / Mask / Affine Quality Control
 
-**Goal:** Characterize intensity distributions to choose normalization strategy.
+**Goal:** Final integrity sweep before any training script runs.
+
+**Tasks (608 triples for raw+liver, 108 for raw+lesion):**
+- Affine match: raw vs lesion_mask; raw vs liver_mask; raw vs liver_roi
+- Spacing match
+- Shape match
+- NaN / Inf in affines, non-positive zooms, malformed headers
+- Empty lesion masks (none expected) — and any lesion mask with `lesion_voxel_count > 1 % * total_voxels` (annotation error)
+- Shape sanity: every volume `512 × N × 512`
+- Visual QC montage:
+  - 30 random positives (mid-positive-slice with lesion+liver overlay)
+  - 10 random negatives (mid-coronal with liver overlay)
+  - The 9 thick-slice cases (carry-over from v1's thick_slice QC, but mapped to mnemonic IDs from manifest filter `slice_thickness_mm > 4.5`)
+
+---
+
+### Section 10 — Fold Balance & Stratification Audit (new in v2)
+
+**Goal:** Verify the seed=42 splits.json folds are balanced for our metrics.
 
 **Tasks:**
-- [ ] For each volume, compute global intensity statistics: min, max, mean, std, and percentiles (0.5th, 1st, 5th, 50th, 95th, 99th, 99.5th)
-- [ ] Compute intensity statistics within lesion masks specifically
-- [ ] Compute intensity statistics of background (non-lesion) voxels in the diaphragm/liver region
-- [ ] Plot intensity histograms for a sample of volumes (overlaying lesion vs background)
-- [ ] Compare intensity distributions across patients to assess inter-patient variability
-- [ ] Compare intensity distributions between primary and WATER sequence volumes
-- [ ] Check for intensity outliers or corrupted volumes
-- [ ] **Decision point:** Percentile clipping range and normalization method (min-max, z-score, percentile clip + rescale)
+- Per fold (5 + holdout): cohort counts, scanner_model breakdown, slice-thickness distribution, age distribution, lesion size category counts (positives), total positive-slice count, mean lesion volume
+- Identify any fold extreme (e.g., a fold with disproportionately many thick-slice cases)
+- Single-row-per-fold summary table + small-multiples bar charts
 
-**Rationale:** MRI lacks standardized Hounsfield units like CT. Intensity normalization is critical but method-dependent. The endometriosis lesions are hyperintense on T1W fat-suppressed -- we want normalization that preserves this contrast.
+**Decision points:**
+- Accept frozen splits as-is, or document deviations to monitor in CV reports
 
 ---
 
-### 6. Multi-Sequence Analysis (WATER Variants)
+### Section 11 — Soft-Negative Spot Check (new in v2, small)
 
-**Goal:** Understand the relationship between primary scans and WATER sequence variants for the 25 patients that have both.
+**Goal:** Quick verification the 5 transferred soft_negatives are unremarkable as negatives.
 
 **Tasks:**
-- [ ] Compare geometry (spacing, dimensions) between primary and WATER sequences for the same patient
-- [ ] Compare intensity distributions between primary and WATER sequences
-- [ ] Check if masks for both sequences annotate the same lesions
-- [ ] Visualize corresponding slices from both sequences for a few patients
-- [ ] Determine if both sequences should be used as separate training examples, or if one is preferred
-- [ ] Check if WATER sequences have different contrast characteristics that could confuse the model
-- [ ] **Decision point:** Include both sequences as independent training examples? Use as multi-channel input? Exclude WATER?
-
-**Rationale:** Some patients have a primary scan AND a WATER (fat-suppressed) variant. Literature suggests multi-sequence input outperforms single-sequence for endometriosis detection. But mixing heterogeneous sequences without accounting for it can also hurt.
+- Tabulate the 5 mnemonic_ids' `cohort=negative` row from manifest, plus liver_voxel_count, intensity stats, scanner_model
+- Compare against the negative-cohort distribution; flag any that look anomalous
 
 ---
 
-### 7. Quality Control Checks
+### Section 12 — Reference Visualizations
 
-**Goal:** Catch annotation errors, corrupt files, or inconsistencies before training.
-
-**Tasks:**
-- [ ] Verify mask and volume dimensions match for all 131 pairs
-- [ ] Verify mask and volume affine matrices match (same physical space)
-- [ ] Check for empty masks (mask files that contain no nonzero voxels)
-- [ ] Check for masks with unexpectedly large annotations (annotator error: labeled half the volume)
-- [ ] Check that all masks only contain expected label values (e.g., {0, 1, 2})
-- [ ] Visual QC: render mid-slice overlays of mask on volume for all 131 cases (or a random sample of 20-30)
-- [ ] Check for duplicate volumes (same patient scanned twice vs. two different sequences)
-- [ ] Verify NIfTI headers are well-formed (no NaN in affines, positive voxel sizes)
-
-**Rationale:** At 131 samples, every data point matters. A few bad annotations or corrupt files can meaningfully degrade model performance.
+Generated alongside the above scripts:
+- 3 example positive slices with lesion + liver overlay
+- 3 example negative slices with liver overlay
+- Lesion-volume histogram (overall + per scanner)
+- Spacing/dimension joint scatter
+- Lesion-centroid heatmap (coronal/axial/sagittal projections, normalized to volume)
+- Lesion-vs-bg intensity histogram overlay
+- Per-fold balance bar chart
+- Worst liver-ROI containment cases (Section 3 deliverable)
 
 ---
 
-### 8. Slice-Level Analysis (2.5D Preparation)
+## 4. Execution Priority
 
-**Goal:** Understand the slice-level characteristics to inform 2.5D training strategy.
-
-**Tasks:**
-- [ ] For each volume, identify which slices contain lesion voxels
-- [ ] Compute the distribution of "positive slices" per volume
-- [ ] Compute the ratio of positive slices to total slices per volume
-- [ ] Determine the typical gap between lesion-containing regions (are lesions contiguous or scattered?)
-- [ ] For positive slices, compute the 2D area of the lesion in that slice (both voxels and mm^2)
-- [ ] Plot the 2D lesion area per slice across the z-axis for a few representative volumes
-- [ ] **Critical question:** What fraction of slices per volume are positive? (Determines positive:negative slice ratio)
-- [ ] **Critical question:** After liver-region cropping, what fraction of remaining slices are positive?
-
-**Rationale:** For 2.5D training, we'll extract individual slices (or small stacks) as training examples. Understanding the positive:negative slice ratio informs sampling strategy and class weighting.
-
----
-
-### 9. Patient-Level Summary & Stratification Variables
-
-**Goal:** Collect per-patient metadata for proper train/val splitting.
-
-**Tasks:**
-- [ ] Create a patient-level summary table: patient ID, number of volumes, sequence types, total lesion volume, number of lesions, largest lesion size
-- [ ] Identify stratification variables: lesion count, total lesion volume, lesion size category (micro <5mm, nodule 5-30mm, plaque >30mm)
-- [ ] Check distribution of these variables -- are they balanced enough for stratified splitting?
-- [ ] Determine if patients with multiple sequences should be grouped
-- [ ] **Decision point:** Stratification strategy for GroupKFold (which variables, how many folds)
+| # | Section | Why |
+|---:|---|---|
+| 1 | Volume Geometry (§1) | Foundational; used by everything |
+| 2 | Mask Binarization Verification (§2) | Quick gate after destructive binarization |
+| 3 | Liver-ROI Containment (§3) | Gates whether liver_roi crop strategy is viable |
+| 4 | Lesion Size & Morphology (§4) | Architecture choices |
+| 5 | Slice-Level + 2D Bbox (§5) | Direct input to 2.5D detector design |
+| 6 | Cohort Comparability (§6) | Shortcut-learning risk surfaced early |
+| 7 | Intensity Stats (§7) | Normalization decision |
+| 8 | Liver Mask QC (§8) | Catch any TotalSeg failures |
+| 9 | QC sweep (§9) | Final integrity check |
+| 10 | Fold Balance (§10) | Verify splits before training |
+| 11 | Soft-Negative Spot Check (§11) | 1-shot sanity |
+| 12 | Visualizations (§12) | Generated alongside above |
 
 ---
 
-### 10. Visualizations to Generate
+## 5. Implementation Notes
 
-**Goal:** Produce reference visualizations for the paper and for ongoing development.
+**Path discovery.** Always read `manifest.csv` (`raw_path`, `lesion_mask_path`, `liver_mask_path`, `liver_roi_path`). Never glob the directory tree (per `data/CLAUDE.md`).
 
-- [ ] Example volume slices showing typical lesion appearance (3-5 examples)
-- [ ] Lesion size distribution histograms
-- [ ] Volume spacing/dimension distributions
-- [ ] Lesion location heatmap (aggregate across all patients)
-- [ ] Intensity distribution comparison (lesion vs background)
-- [ ] Mask overlay montage for QC
-- [ ] Per-patient lesion summary bar charts
+**Parallelism.** `concurrent.futures.ProcessPoolExecutor(max_workers=16)`. Header-only and stat operations are CPU-bound; full-volume reads are IO-bound — for the latter, monitor whether 16 workers is too many for the disk and tune down if IO-saturated.
 
----
+**Memory & tool-call rule.** `eda/CLAUDE.md` rule "no Read tool call > 5 MB" applies to direct image reads via the Read tool, not to scripts. Scripts may read the full ~19 GB dataset over their run.
 
-### 11. EDA for HPC Negative Dataset (Deferred)
+**Outputs.** All CSVs and PNGs go to `eda/outputs/` (gitignored). After every script, append findings to `eda/FINDINGS.md`.
 
-**Goal:** Once negative volumes are available as NIfTI, run a subset of EDA to verify compatibility.
-
-**Tasks (to run on HPC):**
-- [ ] Verify spacing/dimension distributions match positive volumes
-- [ ] Verify intensity distributions are comparable
-- [ ] Check for any scanner/protocol differences between positive and negative cohorts
-- [ ] Confirm no labeling errors (spot-check for lesion-like structures in "negatives")
-- [ ] **Key concern:** If negatives come from a different scanner or protocol, there is a risk of shortcut learning (model learns scanner artifacts instead of lesions)
+**Reproducibility.** Each script logs its inputs (manifest filter), the polars DataFrame schema of its output CSV, and the runtime. Aim for idempotent re-runs.
 
 ---
 
-## Execution Priority
+## 6. Migration of v1 scripts
 
-| Priority | Section | Why |
-|---|---|---|
-| 1 | Volume Geometry (#1) | Determines if resampling is needed; foundational for all downstream analysis |
-| 2 | Mask Binarization Verification (#2) | Quick sanity check before all mask-dependent analysis |
-| 3 | Lesion Size & Morphology (#3) | Directly informs architecture choices (2.5D depth, resolution) |
-| 4 | Lesion Location (#4) | Determines cropping strategy |
-| 5 | Quality Control (#7) | Catch problems early -- every sample matters at n=131 |
-| 6 | Intensity Statistics (#5) | Informs normalization strategy |
-| 7 | Slice-Level Analysis (#8) | Informs 2.5D sampling strategy |
-| 8 | Multi-Sequence (#6) | Secondary concern |
-| 9 | Patient Summary (#9) | Needed before training, not urgent for EDA |
-| 10 | Visualizations (#10) | Generated alongside above |
-| 11 | HPC Negatives (#11) | Deferred |
+| v1 script | Action |
+|---|---|
+| `01_volume_geometry.py` | Rewrite for manifest-driven discovery, parallel, cohort×scanner stratification |
+| `02_mask_binarization.py` | Rewrite as a *post*-binarization sanity check (binarization itself moved to `scripts/binarize_lesion_masks.py`) |
+| `03_lesion_size_morphology.py` | Rewrite manifest-driven, parallel; binarized inputs only |
+| `04_lesion_location.py` | Subsumed by `03_liver_roi_containment.py` (new) |
+| `05_quality_control.py` | Rewrite, extend to liver_mask + liver_roi checks |
+| `06_intensity_statistics.py` | Rewrite; add cohort comparability stratification, in-ROI stats |
+| `07_slice_level_analysis.py` | Rewrite; add 2D bbox extraction, post-crop slice ratio |
+| `08_multi_sequence_analysis.py` | **Delete** — obsolete (canonical sequence selection upstream removed primary/WATER pairing) |
+| `09_thick_slice_qc.py` | Adapt patient list (mnemonic IDs from `manifest.slice_thickness_mm > 4.5`) and fold into §9 visual QC |
+
+**New scripts (numbered by execution priority):**
+- `01_volume_geometry.py`
+- `02_mask_binarization_verification.py`
+- `03_liver_roi_containment.py` ★
+- `04_lesion_size_morphology.py`
+- `05_slice_level_2d_bboxes.py` ★
+- `06_cohort_comparability.py` ★
+- `07_intensity_statistics.py`
+- `08_liver_mask_qc.py` ★
+- `09_quality_control.py`
+- `10_fold_balance.py` ★
+- `11_soft_negative_spot_check.py` ★
+
+★ = new question that the 608-cohort enabled.
 
 ---
 
-## Dependencies & Tools Needed
+## 7. Out-of-scope (for this round)
 
-```
-nibabel        - NIfTI loading
-numpy          - array operations
-scipy          - connected components, morphology
-cc3d           - fast 3D connected components (optional, faster than scipy)
-pandas         - tabular summaries
-matplotlib     - plotting
-seaborn        - statistical plots
-```
+- Phase 2 unsupervised pool (~4,476 volumes) characterization
+- Per-anatomic-location modeling (Segment_1 vs Segment_2 distinction is binarized away)
+- Multi-sequence input (only WATER canonical sequence exists)
+- Resampling/normalization implementation (this EDA round only *decides* the strategy; implementation is downstream)
 
-## Notes
+## 8. Notes carried over from v1
 
-- The research document (`agent/research_medical_imaging_approaches.md`) contains detailed findings from RSNA Kaggle competitions and endometriosis ML papers that informed this plan.
-- Key concern from research: **Dice = 0.293** was achieved by nnU-Net on a similar plaque segmentation task. Expectations should be calibrated accordingly.
-- **RESOLVED:** Segment_1 = superior liver border lesion, Segment_2 = hepatorenal space lesion. Both are endometriosis -- merge to binary mask for training.
+- nnU-Net Dice ≈ 0.293 was achieved on a similar plaque-segmentation task. Calibrate expectations accordingly.
+- Literature: 87.5 % of diaphragmatic endometriosis lesions are right-sided. Section 3 will check whether the 20 mm liver_roi captures the geometric footprint of these lesions.
+- Lesions can be micronodules (<5 mm), nodules (5–30 mm), or plaques (>30 mm). With 3.0–3.6 mm typical slice thickness, a 5 mm micronodule may span only 1–2 slices — minimum 2.5D stack depth is bounded below by this fact.

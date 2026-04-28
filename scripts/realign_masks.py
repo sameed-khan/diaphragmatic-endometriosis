@@ -1,4 +1,6 @@
-"""Realign existing radiologist masks to fresh dcm2niix RAS NIfTIs.
+"""DEPRECATED 2026-04-27 — superseded by data-local-copy migration. Kept as historical reference only.
+
+Realign existing radiologist masks to fresh dcm2niix RAS NIfTIs.
 
 Lossless dual-axis flip: mask[::-1, :, ::-1] + adopt fresh affine.
 Verified against 5 sample patients in the prior investigation (plan §2.6).

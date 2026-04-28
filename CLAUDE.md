@@ -4,6 +4,11 @@
 Develop an object detection model that detects endometriosis lesions in the 
 diaphragm
 
+## Notes
+1. Unless otherwise indicated, you are currently on a GPU compute node on the CWRU HPC
+2. Storage space may run out if on the /home disk - you can check by using `quotagrp`
+	1. If storage space is exceeded you can experiment with deleting unnecessary files on our home disk or looking at moving certain files / folders over to /scratch temporarily
+
 ### Overall Directives
 1. All agent outputs such as plans, research and documents go in the agent/
 folder unless otherwise instructed

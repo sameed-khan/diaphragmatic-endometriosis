@@ -36,13 +36,25 @@ data/liver_rois/
 data/_pipeline/
 
 # Per-patient metadata files — large, regeneratable from scripts/migrate_to_home.py
+# (Phase-0 unified replacement: data/manifest.jsonl + data/cohort.json — committed)
 data/manifest.csv
 data/sidecars.jsonl
+data/_legacy/
+data/_archive/
 
 # Future derivative trees (cropped, normalized, predictions, etc.) — pre-emptive
 data/cropped_*/
 data/normalized_*/
 data/predictions/
+
+# --- Training artifacts (model-dependent, regenerable) ---
+cache/
+runs/
+outputs/
+wandb/
+
+# --- Local environment ---
+.env
 
 # --- OS / editor noise ---
 .DS_Store

@@ -1,0 +1,122 @@
+{
+  "version": "1.0",
+  "generated_at": "2026-04-28T13:55:27.310538+00:00",
+  "code_version": "42dc8361a39df6c1c06784fc90c0dc78a43e298a",
+  "n_patients_total": 608,
+  "splits": {
+    "seed": 42,
+    "n_folds": 5,
+    "stratification": {
+      "positives": [
+        "manufacturer_model_name"
+      ],
+      "negatives": [
+        "manufacturer_model_name",
+        "slice_thickness_bin"
+      ],
+      "thickness_bin_rule": "<=4.0mm vs >4.0mm on canonical sequence",
+      "thickness_bin_collapsed_for_positives": true
+    },
+    "frozen_at": "2026-04-26"
+  },
+  "phase1_targets": {
+    "holdout_pos": 22,
+    "holdout_neg": 100,
+    "cv_pos": 86,
+    "cv_neg": 400,
+    "phase1_total": 608
+  },
+  "fold_summary": {
+    "fold0": {
+      "n": 100,
+      "pos": 18,
+      "neg": 82
+    },
+    "fold1": {
+      "n": 99,
+      "pos": 18,
+      "neg": 81
+    },
+    "fold2": {
+      "n": 96,
+      "pos": 17,
+      "neg": 79
+    },
+    "fold3": {
+      "n": 96,
+      "pos": 17,
+      "neg": 79
+    },
+    "fold4": {
+      "n": 95,
+      "pos": 16,
+      "neg": 79
+    },
+    "holdout": {
+      "n": 122,
+      "pos": 22,
+      "neg": 100
+    }
+  },
+  "n_soft_negatives": 57,
+  "soft_negative_pids": [
+    "amber_wombat_gorge",
+    "ashen_snake_dune",
+    "blush_panther_lance",
+    "bold_gorilla_vault",
+    "bright_pike_glen",
+    "bronze_ox_rain",
+    "bronze_stag_lake",
+    "chalk_ferret_peak",
+    "clay_cobra_weld",
+    "clay_gazelle_glade",
+    "clay_parrot_braid",
+    "clay_yak_cairn",
+    "dusty_lion_hinge",
+    "ember_clam_wharf",
+    "fierce_vulture_ravine",
+    "flint_hedgehog_haven",
+    "foggy_mule_trail",
+    "frost_donkey_dome",
+    "iron_bunny_hinge",
+    "iron_cheetah_terrace",
+    "lemon_hound_cliff",
+    "lemon_shrew_terrace",
+    "light_lobster_ridge",
+    "light_squid_canyon",
+    "olive_ocelot_vault",
+    "opal_chipmunk_tower",
+    "pale_hawk_fable",
+    "pine_heron_cloud",
+    "quiet_stork_shelf",
+    "raven_goose_canyon",
+    "raven_llama_ruins",
+    "rowan_clam_delta",
+    "rowan_gorilla_blaze",
+    "ruby_bobcat_pass",
+    "russet_cougar_hinge",
+    "scarlet_duck_butte",
+    "scarlet_finch_grove",
+    "silent_cat_road",
+    "slate_ocelot_spark",
+    "slim_quail_cairn",
+    "slim_stag_hedge",
+    "steep_wombat_bluff",
+    "swift_quail_hollow",
+    "tawny_condor_briar",
+    "teak_ocelot_delta",
+    "timber_penguin_strait",
+    "topaz_raccoon_plank",
+    "vivid_moose_patch",
+    "vivid_snail_strait",
+    "weary_kite_crest",
+    "wheat_stork_sage",
+    "wild_bear_vault",
+    "wild_salmon_vault",
+    "windy_dragon_verge",
+    "windy_rabbit_ridge",
+    "wintry_wasp_mesa",
+    "woven_lion_zenith"
+  ],
+  "schema_url": "see agent/complete_spec/00_PRD.md \u00a75.1"
+}
