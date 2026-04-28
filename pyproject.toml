@@ -21,7 +21,7 @@ dependencies = [
     "timm>=1.0.11",             # ConvNeXt-tiny + ModelEmaV3 + 5-channel conv1 surgery
     # ── Detection-specific ──────────────────────────────────────────
     "ensemble-boxes>=1.0.9",     # 3D WBF
-    "picai-eval>=2.1",           # FROC + bootstrap
+    "picai-eval>=1.4.13",        # FROC + bootstrap
     # ── Logging / viz ─────────────────────────────────────────────────
     "wandb>=0.18",
     "matplotlib>=3.9",
@@ -38,11 +38,10 @@ dev = [
     "pytest>=8.3",
     "pytest-cov>=5.0",
     "ipython>=8.27",
-    # mmdet is dev-only: source for the vendored RTMDet head + assigner +
-    # the assigner-parity test (see PRD §10.1c). Not imported in production.
-    "mmdet>=3.3.0",
-    "mmengine>=0.10",
-    "mmcv>=2.1",
+    # NOTE: mmdet/mmcv/mmengine were originally in dev for the parity test
+    # (PRD §10.1c, test M8). Pulled out because mmcv 2.2.0 fails to build under
+    # Python 3.12 + uv (pkg_resources missing). Vendored sources are pulled
+    # directly from github at build time. See IMPLEMENTATION_LOG.md.
 ]
 
 [tool.uv]

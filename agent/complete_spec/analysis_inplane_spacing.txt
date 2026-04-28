@@ -1,0 +1,24 @@
+# In-plane spacing analysis
+n_volumes_read: 608
+n_skipped: 0
+
+## X-axis (header.get_zooms()[0]) top 5 bins
+  0.82 mm  count=287  (47.20%)
+  0.78 mm  count=242  (39.80%)
+  0.84 mm  count=24  (3.95%)
+  0.74 mm  count=18  (2.96%)
+  0.70 mm  count=10  (1.64%)
+  median: 0.8203 mm
+  chosen: 0.82 mm
+
+## Z-axis (header.get_zooms()[2]) top 5 bins
+  0.82 mm  count=287  (47.20%)
+  0.78 mm  count=242  (39.80%)
+  0.84 mm  count=24  (3.95%)
+  0.74 mm  count=18  (2.96%)
+  0.70 mm  count=10  (1.64%)
+  median: 0.8203 mm
+  chosen: 0.82 mm
+
+## Paste into scripts/preprocess.py
+TARGET_SPACING = (0.82, 1.5, 0.82)  # mm; from analyze_inplane_spacing.py
