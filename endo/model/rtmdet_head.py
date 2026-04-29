@@ -356,10 +356,20 @@ class RTMDetHead(nn.Module):
                     pos_decoded[:, 2].clamp(0, W - 1),
                     pos_decoded[:, 3].clamp(0, H - 1),
                 ], dim=-1)
-                bbox_loss_i = complete_box_iou_loss(
-                    pos_decoded, matched_gt, reduction="sum"
-                )
-                total_bbox_loss = total_bbox_loss + bbox_loss_i
+                # CIoU contains arctan + sqrt that overflow under bf16 — promote
+                # to fp32 for numeric stability. If the output is still
+                # non-finite (rare degenerate boxes from random init), fall
+                # back to a normalized L1 (each per-box term in [0, 4], same
+                # scale as CIoU) so the gradient doesn't explode.
+                with torch.amp.autocast(device_type="cuda", enabled=False):
+                    pos_f = pos_decoded.float()
+                    gt_f = matched_gt.float()
+                    bbox_loss_i = complete_box_iou_loss(pos_f, gt_f, reduction="sum")
+                    if not torch.isfinite(bbox_loss_i):
+                        norm = float(max(W, H))
+                        per_coord = (pos_f - gt_f).abs() / norm
+                        bbox_loss_i = per_coord.clamp_max(1.0).sum()
+                total_bbox_loss = total_bbox_loss + bbox_loss_i.to(total_bbox_loss.dtype)
 
         # Normalize by world-averaged number of positives (clamped at 1).
         avg_factor = _reduce_mean(total_pos.detach()).clamp_(min=1.0)

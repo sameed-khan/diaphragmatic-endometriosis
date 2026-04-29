@@ -87,8 +87,9 @@ def inference_pass(
                 vol = batch.volume_5ch.to(device, non_blocking=True)
                 cls_scores, bbox_preds, aux_seg = detector(vol)
 
-                # Per-image post-NMS predictions.
-                preds = detector.predict(cls_scores, bbox_preds, image_size)
+                # Per-image post-NMS predictions. The head, not the detector,
+                # owns the (cls_scores, bbox_preds) -> NMS predictions API.
+                preds = detector.head.predict(cls_scores, bbox_preds, image_size=image_size)
 
                 # aux_seg may be (B, 1, H, W) or (B, H, W). Handle both.
                 aux = aux_seg

@@ -325,11 +325,13 @@ class PeriodicDeepEvalCallback(pl.Callback):
             ds = getattr(dl, "dataset", None)
             cand = getattr(ds, "slice_index", None) if ds is not None else None
             if cand is not None:
-                return {(pid, int(sy)): i for i, (pid, sy, _kind) in enumerate(cand)}
+                # cand entries may be 3-tuples (pid, sy, kind) or 4-tuples
+                # (pid, sy, is_pos_slice, kind) — depends on producer.
+                return {(entry[0], int(entry[1])): i for i, entry in enumerate(cand)}
             sampler = getattr(dl, "sampler", None)
             cand = getattr(sampler, "_slice_index", None)
             if cand is not None:
-                return {(pid, int(sy)): i for i, (pid, sy, _kind) in enumerate(cand)}
+                return {(entry[0], int(entry[1])): i for i, entry in enumerate(cand)}
         return None
 
     @staticmethod

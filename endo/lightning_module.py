@@ -84,6 +84,23 @@ class LesionDetectorLM(pl.LightningModule):
             batch.lesion_mask_center,
             aux_seg_weight=self.exp_cfg.training.aux_seg_weight,
         )
+        # NaN guard: bf16-mixed precision can produce non-finite losses on
+        # pathological mini-batches. Skip the step rather than poisoning the
+        # weights — produce a zero-loss tensor that still has a grad path
+        # back to the model parameters (so Lightning's backward pass works)
+        # and contributes zero gradient.
+        if not torch.isfinite(total):
+            import logging as _logging
+            comp_summary = {k: float(v) if torch.isfinite(v) else "nan/inf" for k, v in components.items()}
+            _logging.getLogger("endo.lightning_module").warning(
+                "non-finite loss at batch %d (%s) — skipping step",
+                batch_idx, comp_summary,
+            )
+            # Zero loss with grad path. Use `nan_to_num` so even if
+            # aux_seg_logits is inf, the result is finite and zero-valued.
+            safe = torch.nan_to_num(aux_seg_logits.float(), nan=0.0, posinf=0.0, neginf=0.0)
+            total = safe.sum() * 0.0
+            components = {k: total.detach() for k in components}
 
         # Per-step logging (Lightning aggregates by ``log_every_n_steps``).
         log_kw = {
@@ -123,7 +140,7 @@ class LesionDetectorLM(pl.LightningModule):
                 continue
             scores = preds[i]["scores"]
             max_score = float(scores.max().item()) if scores.numel() > 0 else 0.0
-            tracker.update((pid, int(sy)), max_score)
+            tracker.update((pid, int(sy)), max_score, is_positive_slice=False)
 
     def validation_step(self, batch: Batch, batch_idx: int = 0) -> dict[str, Tensor]:
         cls_scores, bbox_preds, aux_seg_logits = self.model(batch.volume_5ch)

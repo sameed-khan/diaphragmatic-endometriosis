@@ -37,6 +37,11 @@ class _FakeDetector(torch.nn.Module):
         # Need at least one parameter so .parameters() returns a device.
         self.register_parameter("_dummy", torch.nn.Parameter(torch.zeros(1)))
 
+    @property
+    def head(self):
+        # inference_pass calls detector.head.predict — alias to self.
+        return self
+
     def forward(self, vol: torch.Tensor):
         b = vol.shape[0]
         # Two FPN levels, one class.

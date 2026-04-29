@@ -140,6 +140,19 @@ class LesionDataset(Dataset):
             jy = int(self._rng.integers(-jy_max, jy_max + 1))
             jz = int(self._rng.integers(-jz_max, jz_max + 1))
 
+            # Clamp jy so the center-slice window stays in bounds.
+            # slice_y_target = slice_y_cached - py + jy ∈ [half, ty - half)
+            tx, ty, tz = self.target_shape
+            px, py, pz = self.pad_offset
+            target_unjittered = slice_y_cached - py
+            jy_lo = self._half - target_unjittered
+            jy_hi = (ty - self._half - 1) - target_unjittered
+            jy = max(jy_lo, min(jy, jy_hi))
+            # Clamp jx, jz so the (X, Z) crop window stays inside the cache.
+            cx, cy, cz = self.cache_shape
+            jx = max(-(cx - tx - px), min(jx, px))
+            jz = max(-(cz - tz - pz), min(jz, pz))
+
         return self._build_sample(pid, slice_y_cached, is_positive_slice, entry, jx, jy, jz)
 
     # ------------------------------------------------------------------
