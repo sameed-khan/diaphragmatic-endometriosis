@@ -114,11 +114,27 @@ class LesionDetectorLM(pl.LightningModule):
         self.log("train/loss_total", components["loss_total"], prog_bar=True, **log_kw)
 
         # Update score EMA tracker for negative slices only (I.8.3).
+        # Gated to skip the per-batch NMS work until we're within
+        # `score_ema_warmup_epochs` of `hard_pool_start_epoch`, and then only
+        # every Nth step. NMS+decode on the GPU is small but compounds at
+        # high step rates, and the EMA decay (default 0.9) tolerates a
+        # slightly looser cadence with no measurable HNM impact.
         tracker = getattr(self, "score_ema_tracker", None)
-        if tracker is not None:
+        if tracker is not None and self._should_update_score_ema(batch_idx):
             self._update_score_ema(batch, cls_scores, bbox_preds, tracker)
 
         return total
+
+    def _should_update_score_ema(self, batch_idx: int) -> bool:
+        sampler_cfg = getattr(self.exp_cfg, "sampler", None)
+        if sampler_cfg is None:
+            return True
+        warmup = int(getattr(sampler_cfg, "score_ema_warmup_epochs", 0))
+        start = int(getattr(sampler_cfg, "hard_pool_start_epoch", 0))
+        every = max(1, int(getattr(sampler_cfg, "score_ema_update_every_n_steps", 1)))
+        if int(self.current_epoch) < max(0, start - warmup):
+            return False
+        return (int(batch_idx) % every) == 0
 
     @torch.no_grad()
     def _update_score_ema(

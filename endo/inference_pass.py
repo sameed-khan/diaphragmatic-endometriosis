@@ -54,12 +54,16 @@ def inference_pass(
     ``(cls_scores, bbox_preds, aux_seg_logits)`` where:
 
       - ``cls_scores`` / ``bbox_preds`` are per-FPN-level lists of tensors
-        consumable by ``model.model.predict``;
+        consumable by ``model.model.head.predict`` (NMS lives on the head,
+        per the cross-component contract in `endo/CLAUDE.md`);
       - ``aux_seg_logits`` is ``(B, 1, H, W)`` (or ``(B, H, W)``) of the
         slice-level presence head's logits.
 
     Throughput target: ≥ 50 slices/sec on L40S. Inference uses bf16 autocast
-    when on CUDA.
+    when on CUDA. ``batch_size`` is forwarded to
+    ``datamodule.inference_dataloader`` so callers (deep-eval, holdout, GRU
+    feature cache) can tune it without touching the DataModule's training
+    batch size.
     """
     detector = model.model
     device = next(detector.parameters()).device if any(p is not None for p in detector.parameters()) else torch.device("cpu")  # type: ignore[arg-type]
@@ -76,10 +80,14 @@ def inference_pass(
     out: dict[str, list[SliceScore]] = {pid: [] for pid in patient_ids}
 
     try:
-        loader = datamodule.inference_dataloader(patient_ids)
+        loader = datamodule.inference_dataloader(patient_ids, batch_size=batch_size)
     except TypeError:
-        # Some DMs may take a kw-only argument.
-        loader = datamodule.inference_dataloader(patient_ids=patient_ids)
+        # Older DMs may not accept batch_size — fall back to the contract
+        # that just takes patient_ids.
+        try:
+            loader = datamodule.inference_dataloader(patient_ids)
+        except TypeError:
+            loader = datamodule.inference_dataloader(patient_ids=patient_ids)
 
     try:
         with torch.no_grad(), _autocast_ctx(device):
