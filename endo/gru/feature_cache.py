@@ -51,7 +51,12 @@ def _expected_pids(
     return val_pids, lookup
 
 
-def _build_datamodule(experiment: ExperimentConfig, fold: int) -> LesionDataModule:
+def _build_datamodule(
+    experiment: ExperimentConfig,
+    fold: int,
+    *,
+    allow_holdout: bool = False,
+) -> LesionDataModule:
     cache_root = experiment.paths.cache_root
     data_root = experiment.paths.data_root
     dm = LesionDataModule(
@@ -61,7 +66,7 @@ def _build_datamodule(experiment: ExperimentConfig, fold: int) -> LesionDataModu
         fold=fold,
         batch_size=8,
         num_workers=0,
-        allow_holdout=False,
+        allow_holdout=allow_holdout,
     )
     dm.setup()
     return dm
@@ -139,6 +144,7 @@ def extract_features_for_pids(
     output_dir: Path,
     ckpt_path: Path,
     device: str = "cuda",
+    allow_holdout: bool = False,
 ) -> Path:
     """Build a feature cache directory at ``output_dir`` for ``pids`` using
     the detector ``ckpt_path``.
@@ -146,6 +152,10 @@ def extract_features_for_pids(
     Used by the post-training eval to rebuild the GRU feature cache from a
     chosen ``best``/``last`` checkpoint instead of re-using stale per-fold
     caches that were built from training-time monitoring weights.
+
+    ``allow_holdout`` is forwarded to the underlying ``LesionDataModule``.
+    Per I.9.3 / A.5, only ``run_holdout_inference`` (via
+    ``_try_gru_rescore_holdout``) is permitted to set this to ``True``.
     """
     out_dir = Path(output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -155,7 +165,7 @@ def extract_features_for_pids(
         raise FileNotFoundError(f"Detector checkpoint not found: {ckpt}")
 
     lm = _load_detector_with_ema(ckpt, device, experiment=experiment)
-    dm = _build_datamodule(experiment, fold)
+    dm = _build_datamodule(experiment, fold, allow_holdout=allow_holdout)
 
     _, lookup = _expected_pids(experiment, fold)
     target_pids = sorted(set(pids))

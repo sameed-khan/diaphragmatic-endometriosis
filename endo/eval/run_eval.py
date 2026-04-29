@@ -848,6 +848,7 @@ def _try_gru_rescore_holdout(
             output_dir=feature_dir,
             ckpt_path=ckpt_path,
             device=device,
+            allow_holdout=True,
         )
         return rescore_slice_scores(
             slice_scores, ckpt_path=gru_ckpt, feature_dir=feature_dir
