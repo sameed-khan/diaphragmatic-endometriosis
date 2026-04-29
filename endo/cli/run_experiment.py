@@ -939,7 +939,24 @@ def build_argparser() -> argparse.ArgumentParser:
     return parser
 
 
+def _apply_torch_global_settings() -> None:
+    """Set process-wide torch knobs that should apply to every subcommand.
+
+    `set_float32_matmul_precision('medium')` enables A100 Tensor Cores for
+    fp32 matmuls (bf16 multiplier, fp32 accumulator) — same dynamic range
+    as fp32, ~5-10× speedup. Required for the `precision="32-true"` retry
+    config to be wall-time-tractable on MIG slices.
+    """
+    try:
+        import torch
+
+        torch.set_float32_matmul_precision("medium")
+    except Exception:  # noqa: BLE001
+        pass
+
+
 def main(argv: Sequence[str] | None = None) -> int:
+    _apply_torch_global_settings()
     parser = build_argparser()
     args = parser.parse_args(argv)
     func = getattr(args, "func", None)
