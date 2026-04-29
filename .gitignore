@@ -60,3 +60,7 @@ wandb/
 .DS_Store
 *.swp
 history.txt
+
+# --- miscellaneous ---
+agent/*.json
+agent/*.csv
