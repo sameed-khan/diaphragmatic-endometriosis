@@ -259,13 +259,17 @@ class TrainAugmentation:
         seed = _per_sample_seed(self.rng_seed, sample)
         rng = np.random.default_rng(seed)
 
+        # The dataset already passes a fp32 contiguous copy of the cropped
+        # volume + a uint8 lesion mask (per Sample contract). The
+        # ascontiguousarray/dtype combo is a no-op when both already match,
+        # so this is free in the production path.
         volume = np.ascontiguousarray(sample.volume_full_cropped, dtype=np.float32)
-        lesion_mask = np.ascontiguousarray(
-            sample.lesion_mask_full_cropped, dtype=np.uint8
-        )
+        lesion_mask = np.ascontiguousarray(sample.lesion_mask_full_cropped, dtype=np.uint8)
         border_band_coords = sample.border_band_coords
 
-        # 1) Paste.
+        # 1) Paste — must run on the full 3D volume so donors that span Y can
+        #    legitimately land near the center slice. Paste mutates volume +
+        #    lesion_mask in-place.
         if self.bank and border_band_coords is not None and border_band_coords.shape[0] > 0:
             volume, lesion_mask, _paste_results = multi_paste_volume(
                 volume,
@@ -277,15 +281,36 @@ class TrainAugmentation:
                 frame_shape=tuple(int(s) for s in volume.shape),
             )
 
-        # 2) Geometric (in-plane affine + elastic; lockstep, Y-coherent).
-        volume, lesion_mask = geometric_aug(volume, lesion_mask, self.cfg.geometric, rng)
-
-        # 3) Intensity (volume only).
-        volume = intensity_aug(volume, self.cfg.intensity, rng)
-
-        # 4) Re-derive 2D boxes for the center slice (slice_y).
+        # 2) Narrow to the 5-slice Y-slab around slice_y.
+        #    Geometric augmentation is in-plane and Y-coherent (T1.12 / T1.13)
+        #    and intensity is voxel-wise; running them on the full Y axis
+        #    computes 32× more work than the network ever consumes. Operating
+        #    on the slab preserves both invariants by construction (same 2D
+        #    field reused across all 5 Y planes).
         slice_y = int(sample.slice_y)
-        center_mask_xz = lesion_mask[:, slice_y, :]  # (X, Z)
+        half = 2  # 5-channel window
+        y_lo = slice_y - half
+        y_hi = slice_y + half + 1
+        if y_lo < 0 or y_hi > volume.shape[1]:
+            raise IndexError(
+                f"slice_y={slice_y} maps to slab [{y_lo}, {y_hi}) outside "
+                f"volume Y={volume.shape[1]}; dataset jitter clamp should "
+                "have prevented this."
+            )
+        volume_slab = np.ascontiguousarray(volume[:, y_lo:y_hi, :])
+        mask_slab = np.ascontiguousarray(lesion_mask[:, y_lo:y_hi, :])
+        slab_slice_y = slice_y - y_lo  # = half (== 2)
+
+        # 3) Geometric (in-plane affine + elastic; lockstep, Y-coherent).
+        volume_slab, mask_slab = geometric_aug(
+            volume_slab, mask_slab, self.cfg.geometric, rng
+        )
+
+        # 4) Intensity (volume only).
+        volume_slab = intensity_aug(volume_slab, self.cfg.intensity, rng)
+
+        # 5) Re-derive 2D boxes for the center slice (slice_y in slab frame).
+        center_mask_xz = mask_slab[:, slab_slice_y, :]  # (X, Z)
         boxes_xz = derive_boxes_from_mask(
             center_mask_xz,
             connectivity=self.connectivity,
@@ -297,22 +322,14 @@ class TrainAugmentation:
             boxes = np.zeros((0, 4), dtype=np.float32)
         labels = np.zeros((boxes.shape[0],), dtype=np.int64)
 
-        # 5) Extract 5-channel slice tensor centred at slice_y.
-        half = 2  # 5-channel window
-        triplet_xyz = volume[:, slice_y - half : slice_y + half + 1, :]  # (X, 5, Z)
-        # tensor[c, z, x] = volume[x, slice_y - 2 + c, z] → (5, Z, X)
-        volume_5ch = np.ascontiguousarray(
-            np.transpose(triplet_xyz, (1, 2, 0)).astype(np.float32, copy=False)
-        )
-        # Sanity: channel 2 == volume[:, slice_y, :].T
-        # (We do not assert in production for cost reasons.)
+        # 6) Extract 5-channel slice tensor. The slab is already exactly
+        #    (X, 5, Z) — just transpose to (5, Z, X) per Sample contract.
+        # tensor[c, z, x] = slab[x, c, z] → (5, Z, X)
+        volume_5ch = np.ascontiguousarray(np.transpose(volume_slab, (1, 2, 0)))
 
-        lesion_mask_center_xz = lesion_mask[:, slice_y, :]  # (X, Z)
-        lesion_mask_center = np.ascontiguousarray(
-            lesion_mask_center_xz.T.astype(np.uint8, copy=False)
-        )
+        lesion_mask_center = np.ascontiguousarray(center_mask_xz.T.astype(np.uint8, copy=False))
 
-        # 6) Build the post-aug Sample. Drop the consumed full arrays.
+        # 7) Build the post-aug Sample. Drop the consumed full arrays.
         sample.volume_5ch = volume_5ch
         sample.lesion_mask_center = lesion_mask_center
         sample.boxes = boxes

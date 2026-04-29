@@ -29,4 +29,13 @@ class SamplerConfig(BaseModel):
     # Loss-EMA tracker decay.
     score_ema_decay: float = 0.9
 
+    # Throughput knobs for the per-step score-EMA update. The update runs
+    # ``model.head.predict`` (NMS + decode) on every selected step; gating
+    # it keeps the GPU step lean before HNM kicks in. Defaults match prior
+    # behavior except that the update is skipped until two epochs before
+    # ``hard_pool_start_epoch`` (the EMA needs a brief warmup window) and
+    # only every Nth step within that window.
+    score_ema_warmup_epochs: int = 2
+    score_ema_update_every_n_steps: int = 1
+
     hard_pool_top_k: int = 1000

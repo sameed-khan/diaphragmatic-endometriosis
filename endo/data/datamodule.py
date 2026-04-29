@@ -24,7 +24,8 @@ from typing import Any
 import numpy as np
 import polars as pl
 import pytorch_lightning as pl_lightning
-from torch.utils.data import DataLoader, Sampler
+import torch
+from torch.utils.data import DataLoader, Sampler, get_worker_info
 
 from endo.data.collate import collate_fn
 from endo.data.dataset import LesionDataset
@@ -41,6 +42,27 @@ if False:  # type-checking only; avoid runtime import cycle
 
 class HoldoutAccessError(RuntimeError):
     """Raised when a holdout patient enters a code path with ``allow_holdout=False``."""
+
+
+def _seed_worker_rng(worker_id: int) -> None:
+    """Re-seed the underlying ``LesionDataset._rng`` per worker.
+
+    PyTorch derives ``torch.initial_seed()`` per worker from
+    ``base_seed + worker_id`` and re-derives that for each epoch when
+    ``persistent_workers`` is False. Mirroring that into NumPy's RNG keeps
+    jitter sequences distinct across workers and across epochs without our
+    own bookkeeping. With ``persistent_workers=True`` the worker is reseeded
+    once at startup; combined with the augmentation pipeline's per-sample
+    ``(patient_id, slice_y)`` seeding, that's enough diversity in practice.
+    """
+    info = get_worker_info()
+    if info is None or info.dataset is None:
+        return
+    base_seed = int(torch.initial_seed()) & 0xFFFFFFFFFFFFFFFF
+    seed = (base_seed + int(worker_id)) & 0xFFFFFFFFFFFFFFFF
+    ds = info.dataset
+    if hasattr(ds, "_rng"):
+        ds._rng = np.random.default_rng(seed)
 
 
 def _read_jsonl(path: Path) -> list[dict[str, Any]]:
@@ -148,14 +170,24 @@ class LesionDataModule(pl_lightning.LightningDataModule):
                     f"patient_id {pid!r} missing from {pre_path} (preprocessed cache)."
                 )
             row = pre_lookup[pid]
-            volume = np.load(self.cache_root / row["cache_volume_path"])  # fp16
+            # mmap volumes + lesion masks: the dataset only ever views these
+            # arrays read-only, so there's no need to materialize ~56 MB per
+            # patient × ~500 patients (= ~30 GB) up-front. The page cache
+            # backs reads on demand and pages stay shared (COW) across
+            # forked dataloader workers.
+            volume = np.load(
+                self.cache_root / row["cache_volume_path"], mmap_mode="r"
+            )  # fp16
             lesion_mask: np.ndarray | None
             if row.get("cache_lesion_mask_path"):
-                lesion_mask = np.load(self.cache_root / row["cache_lesion_mask_path"])
+                lesion_mask = np.load(
+                    self.cache_root / row["cache_lesion_mask_path"], mmap_mode="r"
+                )
             else:
                 lesion_mask = None
             border_band: np.ndarray | None
             if row.get("cache_border_band_path"):
+                # Border bands are tiny (~M×3 int16); materialize them.
                 border_band = np.load(self.cache_root / row["cache_border_band_path"])
             else:
                 border_band = None
@@ -233,6 +265,7 @@ class LesionDataModule(pl_lightning.LightningDataModule):
             persistent_workers=self.persistent_workers,
             pin_memory=self.pin_memory,
             drop_last=True,
+            worker_init_fn=_seed_worker_rng if self.num_workers > 0 else None,
         )
         if self.sampler_train is not None:
             kwargs["sampler"] = self.sampler_train
@@ -251,9 +284,15 @@ class LesionDataModule(pl_lightning.LightningDataModule):
             persistent_workers=self.persistent_workers,
             pin_memory=self.pin_memory,
             drop_last=False,
+            worker_init_fn=_seed_worker_rng if self.num_workers > 0 else None,
         )
 
-    def inference_dataloader(self, patient_ids: list[str]) -> DataLoader:
+    def inference_dataloader(
+        self,
+        patient_ids: list[str],
+        *,
+        batch_size: int | None = None,
+    ) -> DataLoader:
         """Build a sequential dataloader over the requested patients' slices.
 
         Holdout guard re-fires here. ``patient_ids`` are checked against the
@@ -303,13 +342,14 @@ class LesionDataModule(pl_lightning.LightningDataModule):
         )
         return DataLoader(
             ds,
-            batch_size=self.batch_size,
+            batch_size=int(batch_size) if batch_size is not None else self.batch_size,
             num_workers=self.num_workers,
             shuffle=False,
             collate_fn=collate_fn,
             persistent_workers=self.persistent_workers,
             pin_memory=self.pin_memory,
             drop_last=False,
+            worker_init_fn=_seed_worker_rng if self.num_workers > 0 else None,
         )
 
     # ------------------------------------------------------------------
