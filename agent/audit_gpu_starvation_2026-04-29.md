@@ -192,7 +192,27 @@ The audit task is to enumerate fixes and tradeoffs, *not* to implement them. Whe
 
 Estimated combined wall-clock effect: **~20-25× faster training step on A10** (from ~4.5 s/batch worst-case down to roughly ~0.3-0.4 s/batch — i.e. GPU-bound again). On the 5-GPU node intended for the full-folds run, that means the per-fold training time drops from O(hours) to O(minutes per epoch) and 60 epochs × 5 folds becomes feasible inside a few hours rather than overnight.
 
-## 4. Confidence & caveats
+## 4. Post-fix verification (branch `codex-audit/efficiency`)
+
+After implementing all P0/P1/P2 fixes, re-ran the same volume through the production `TrainAugmentation.__call__` pipeline (`scripts/profile_train_aug_call.py`) on `amber_eagle_spark`:
+
+| Stage / pipeline                     | Before    | After       | Speedup    |
+|--------------------------------------|----------:|------------:|-----------:|
+| `TrainAugmentation.__call__` (mean)  | 4 481 ms  | **141.8 ms** | **31.6 ×** |
+| `TrainAugmentation.__call__` (p99)   | ~5 416 ms |     152.9 ms |     ~35 ×  |
+
+The smoke test (`scripts/smoke_train.py`, full augmentation enabled) was rerun on this branch:
+
+- 50 training steps captured (≥ 20 required)
+- first-10 mean loss: **2.314** → last-10 mean loss: **1.102** (− 52 %)
+- All step losses finite
+- `val/slice_auroc` logged (= 0.5 on the 5-vol smoke set, expected)
+- `Trainer.fit` reaches `max_epochs=2` cleanly; no NaN/Inf warnings or aborts
+- Steady-state pace ~1.64 it/s at batch_size=4, num_workers=2. Pre-fix this config would have stalled around 0.1 it/s.
+
+The full `pytest tests/ -q` suite passes: **117 passed, 0 failed** (264 s wall-clock), including the real-cache `test_smoke_runs_to_completion_real_cache` integration test which itself runs the full smoke training through the new pipeline.
+
+## 5. Confidence & caveats
 
 - The per-stage microbenchmark used real cached volumes with the production aug config and ran 15 iterations; numbers are stable (p99 within 5-15 % of mean).
 - The "no-aug" training profile is a clean, *measured* upper bound on GPU utilisation; the "with-aug" projection is back-of-the-envelope (per-sample throughput / workers). A direct measurement is in progress (workers=4 dataloader run, workers=16 training run). When they finish I'll splice the JSON into this file under §1.5 — but their qualitative outcome (heavy CPU-bound starvation) is already determined by §1.1 alone.
