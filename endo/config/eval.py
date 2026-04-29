@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 
@@ -32,3 +34,11 @@ class EvalConfig(BaseModel):
     stratify_keys: list[str] = Field(
         default_factory=lambda: ["scanner_model", "variant", "slice_thickness_bin"]
     )
+
+    # Final eval reads a fresh ckpt per fold (best or last). The CV path no
+    # longer consumes the deep_eval npz cache — that cache is training-time
+    # only.
+    eval_ckpt: Literal["best", "last"] = "best"
+
+    # Emit per-call (TP/FP/FN) JSONL alongside metrics.
+    emit_call_jsonl: bool = True

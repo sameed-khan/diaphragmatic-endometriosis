@@ -304,6 +304,40 @@ def test_M14_ema_callback_swap_swap_back(exp_cfg):
 
 
 # ---------------------------------------------------------------------------
+# Audit 2026-04-29 — external swap_to_ema / restore_live round-trip
+# ---------------------------------------------------------------------------
+def test_ema_callback_external_swap_round_trip(exp_cfg):
+    from endo.ema_callback import EmaCallback
+    from endo.lightning_module import LesionDetectorLM
+
+    lm = LesionDetectorLM(exp_cfg)
+    cb = EmaCallback(decay=0.999)
+    cb._init_ema(lm)
+
+    # Mutate EMA shadow so swap is observable.
+    with torch.no_grad():
+        for p in cb.ema.module.parameters():
+            p.data.add_(2.0)
+
+    name = next(iter(lm.model.state_dict()))
+    pre = lm.model.state_dict()[name].detach().clone()
+
+    assert cb.swap_to_ema(lm) is True
+    assert cb._is_swapped is True
+    # Idempotent — second swap is a no-op.
+    assert cb.swap_to_ema(lm) is False
+
+    mid = lm.model.state_dict()[name].detach().clone()
+    if pre.is_floating_point() and pre.numel() > 0:
+        assert not torch.allclose(pre, mid), "external swap did not modify live state"
+
+    assert cb.restore_live() is True
+    assert cb._is_swapped is False
+    post = lm.model.state_dict()[name].detach().clone()
+    assert torch.equal(pre, post), "live state not restored after restore_live"
+
+
+# ---------------------------------------------------------------------------
 # M15 - Warmup linear -> cosine LR schedule shape
 # ---------------------------------------------------------------------------
 def test_M15_warmup_cosine_lr_schedule(exp_cfg):

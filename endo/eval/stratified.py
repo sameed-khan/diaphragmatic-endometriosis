@@ -46,6 +46,9 @@ def stratify_metrics(
     manifest_rows: Sequence[dict] | Mapping[str, dict],
     strata: list[str] | None = None,
     eval_cfg: EvalConfig | None = None,
+    *,
+    raw_predictions: Mapping[str, dict] | None = None,
+    gt_masks: Mapping[str, "np.ndarray"] | None = None,
 ) -> list[dict]:
     """Compute per-stratum volume metrics.
 
@@ -55,6 +58,10 @@ def stratify_metrics(
     Returns a list of dicts, one per ``(stratum_kind, stratum_value)``:
     ``{'stratum_kind', 'stratum_value', 'metrics': {metric: {value, ci_lower,
     ci_upper}}, 'n_patients'}``.
+
+    Raw vs thresholded split (audit 2026-04-29 §3.3): AUROC/AP are computed
+    from ``raw_predictions`` (unfiltered fused scores) when provided, while
+    FROC/sens@FP use the (thresholded) ``per_volume_predictions``.
     """
     cfg = eval_cfg if eval_cfg is not None else EvalConfig()
     if strata is None:
@@ -79,7 +86,23 @@ def stratify_metrics(
         for value, pids in buckets.items():
             sub_preds = {p: per_volume_predictions[p] for p in pids}
             sub_labels = {p: int(per_volume_labels.get(p, 0)) for p in pids}
-            metrics = compute_volume_metrics(sub_preds, sub_labels, eval_cfg=cfg)
+            sub_raw = (
+                {p: raw_predictions[p] for p in pids if p in raw_predictions}
+                if raw_predictions is not None
+                else None
+            )
+            sub_masks = (
+                {p: gt_masks[p] for p in pids if p in gt_masks}
+                if gt_masks is not None
+                else None
+            )
+            metrics = compute_volume_metrics(
+                sub_preds,
+                sub_labels,
+                eval_cfg=cfg,
+                raw_predictions=sub_raw,
+                gt_masks=sub_masks,
+            )
             out.append(
                 {
                     "stratum_kind": kind,

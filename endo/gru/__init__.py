@@ -1,6 +1,6 @@
 """Component 6.5 — GRU rescorer (Stage 2)."""
 
-from endo.gru.feature_cache import extract_features_for_fold
+from endo.gru.feature_cache import extract_features_for_fold, extract_features_for_pids
 from endo.gru.rescorer import (
     GRURescorer,
     rescore_detector_outputs,
@@ -17,6 +17,7 @@ __all__ = [
     "GRUFeatureDataset",
     "GRURescorer",
     "extract_features_for_fold",
+    "extract_features_for_pids",
     "gru_collate",
     "rescore_detector_outputs",
     "train_gru_for_fold",
