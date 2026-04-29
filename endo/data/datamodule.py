@@ -35,6 +35,9 @@ from endo.data.manifest import (
 )
 from endo.data.samples import Sample
 
+if False:  # type-checking only; avoid runtime import cycle
+    from endo.config.experiment import ExperimentConfig
+
 
 class HoldoutAccessError(RuntimeError):
     """Raised when a holdout patient enters a code path with ``allow_holdout=False``."""
@@ -307,6 +310,64 @@ class LesionDataModule(pl_lightning.LightningDataModule):
             persistent_workers=self.persistent_workers,
             pin_memory=self.pin_memory,
             drop_last=False,
+        )
+
+    # ------------------------------------------------------------------
+    # Construction helpers
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def from_experiment(
+        experiment_config: "ExperimentConfig",
+        *,
+        fold: int,
+        manifest_path: Path | None = None,
+        cohort_path: Path | None = None,
+        allow_holdout: bool = False,
+        rng_seed: int | None = None,
+    ) -> "LesionDataModule":
+        """Construct a ``LesionDataModule`` from an :class:`ExperimentConfig`.
+
+        Builds the training :class:`TrainAugmentation` from
+        ``experiment_config.augmentation`` automatically when present.
+        """
+        # Local imports to avoid a top-of-module cycle (transform imports
+        # endo.lesion_bank → numpy heavy init at module import time).
+        from endo.augmentation.transform import TrainAugmentation
+
+        cache_root = Path(experiment_config.paths.cache_root)
+        data_root = Path(experiment_config.paths.data_root)
+
+        manifest_path_resolved = (
+            Path(manifest_path) if manifest_path is not None else data_root / "manifest.jsonl"
+        )
+        cohort_path_resolved = (
+            Path(cohort_path) if cohort_path is not None else data_root / "cohort.json"
+        )
+
+        bank_path = experiment_config.paths.lesion_bank
+        augment_train: Callable[[Sample], Sample] | None
+        if experiment_config.augmentation is not None:
+            augment_train = TrainAugmentation(
+                cfg=experiment_config.augmentation,
+                cache_root=cache_root,
+                bank_path=Path(bank_path) if bank_path is not None else None,
+                rng_seed=int(experiment_config.seed),
+            )
+        else:
+            augment_train = None
+
+        training_cfg = experiment_config.training
+        return LesionDataModule(
+            cache_root=cache_root,
+            manifest_path=manifest_path_resolved,
+            cohort_path=cohort_path_resolved,
+            fold=int(fold),
+            batch_size=int(getattr(training_cfg, "batch_size", 8)),
+            num_workers=int(getattr(training_cfg, "num_workers", 8)),
+            augment_train=augment_train,
+            allow_holdout=allow_holdout,
+            rng_seed=int(rng_seed if rng_seed is not None else experiment_config.seed),
         )
 
     # ------------------------------------------------------------------
