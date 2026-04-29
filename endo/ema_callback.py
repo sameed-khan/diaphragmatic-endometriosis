@@ -23,6 +23,12 @@ class EmaCallback(pl.Callback):
         self.decay = float(decay)
         self.ema: ModelEmaV3 | None = None
         self._saved_live_state: dict[str, torch.Tensor] | None = None
+        # Tracks an *external* swap (e.g. from PeriodicDeepEvalCallback)
+        # initiated via ``swap_to_ema()``. Independent of the validation
+        # swap so the two can't double-swap each other.
+        self._is_swapped: bool = False
+        self._external_saved_state: dict[str, torch.Tensor] | None = None
+        self._swap_module: nn.Module | None = None
 
     # ------------------------------------------------------------------
     # Lifecycle.
@@ -90,6 +96,49 @@ class EmaCallback(pl.Callback):
             return
         pl_module.model.load_state_dict(self._saved_live_state, strict=True)
         self._saved_live_state = None
+
+    # ------------------------------------------------------------------
+    # External swap API (used by PeriodicDeepEvalCallback so deep-eval and
+    # hard-negative mining run on the deployment EMA weights, not live).
+    # ------------------------------------------------------------------
+    def swap_to_ema(self, pl_module: pl.LightningModule | None = None) -> bool:
+        """Swap the live model to EMA shadow weights.
+
+        Idempotent — a second call while already swapped is a no-op (returns
+        False). Returns True if the swap was performed.
+        """
+        if self._is_swapped or self.ema is None:
+            return False
+        # Resolve the live module: prefer the explicit argument, fall back to
+        # the one stashed at validation-swap time, else cannot swap.
+        target = pl_module
+        if target is None:
+            return False
+        live = target.model
+        self._external_saved_state = {
+            k: v.detach().clone() for k, v in live.state_dict().items()
+        }
+        ema_state = {
+            k: v.to(dtype=self._external_saved_state[k].dtype)
+            if k in self._external_saved_state
+            else v
+            for k, v in self.ema.module.state_dict().items()
+        }
+        live.load_state_dict(ema_state, strict=True)
+        self._swap_module = live
+        self._is_swapped = True
+        return True
+
+    def restore_live(self) -> bool:
+        """Reverse :meth:`swap_to_ema`. Idempotent."""
+        if not self._is_swapped:
+            return False
+        if self._swap_module is not None and self._external_saved_state is not None:
+            self._swap_module.load_state_dict(self._external_saved_state, strict=True)
+        self._external_saved_state = None
+        self._swap_module = None
+        self._is_swapped = False
+        return True
 
     # ------------------------------------------------------------------
     # Checkpoint persistence.

@@ -235,7 +235,9 @@ def _train_one_fold(
     try:
         from endo.sampler.score_ema import ScoreEMATracker
 
-        lm.score_ema_tracker = ScoreEMATracker()
+        lm.score_ema_tracker = ScoreEMATracker(
+            decay=float(experiment.sampler.score_ema_decay)
+        )
     except Exception as e:  # noqa: BLE001
         log.warning("ScoreEMATracker not available (%s) — HNM disabled.", e)
 

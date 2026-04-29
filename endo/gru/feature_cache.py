@@ -131,6 +131,54 @@ def _extract_for_pid(
     return feats, slice_ys
 
 
+def extract_features_for_pids(
+    experiment: ExperimentConfig,
+    fold: int,
+    *,
+    pids: Iterable[str],
+    output_dir: Path,
+    ckpt_path: Path,
+    device: str = "cuda",
+) -> Path:
+    """Build a feature cache directory at ``output_dir`` for ``pids`` using
+    the detector ``ckpt_path``.
+
+    Used by the post-training eval to rebuild the GRU feature cache from a
+    chosen ``best``/``last`` checkpoint instead of re-using stale per-fold
+    caches that were built from training-time monitoring weights.
+    """
+    out_dir = Path(output_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    ckpt = Path(ckpt_path)
+    if not ckpt.exists():
+        raise FileNotFoundError(f"Detector checkpoint not found: {ckpt}")
+
+    lm = _load_detector_with_ema(ckpt, device, experiment=experiment)
+    dm = _build_datamodule(experiment, fold)
+
+    _, lookup = _expected_pids(experiment, fold)
+    target_pids = sorted(set(pids))
+    for pid in target_pids:
+        out_path = out_dir / f"{pid}.npz"
+        feats, slice_ys = _extract_for_pid(pid, dm, lm, device)
+        label = lookup.get(pid, {}).get("label", "negative")
+        patient_label = np.int8(1 if label == "positive" else 0)
+        np.savez_compressed(
+            out_path,
+            feats=feats,
+            slice_ys=slice_ys,
+            patient_label=patient_label,
+        )
+        log.info(
+            "Wrote %s (%d slices, label=%d)",
+            out_path,
+            feats.shape[0],
+            int(patient_label),
+        )
+    return out_dir
+
+
 def extract_features_for_fold(
     experiment: ExperimentConfig,
     fold: int,

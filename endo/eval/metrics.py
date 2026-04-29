@@ -160,28 +160,43 @@ def compute_volume_metrics(
     per_volume_predictions: Mapping[str, dict],
     per_volume_labels: Mapping[str, int],
     eval_cfg: EvalConfig | None = None,
+    *,
+    raw_predictions: Mapping[str, dict] | None = None,
+    gt_masks: Mapping[str, np.ndarray] | None = None,
 ) -> dict:
     """Compute AUROC, AP, sens@{fp_points} with patient-level bootstrap CIs.
 
     Args:
         per_volume_predictions: ``{pid: {'score': float, 'fused_boxes': (M,5),
-            'fused_scores': (M,), 'label': int (optional)}}``. ``label`` is
-            sourced from ``per_volume_labels`` if missing.
+            'fused_scores': (M,), 'label': int (optional)}}`` — the
+            **thresholded** predictions used for FROC/sens@FP.
         per_volume_labels: ``{pid: 0|1}``.
         eval_cfg: optional :class:`EvalConfig`; defaults are used if ``None``.
+        raw_predictions: optional unfiltered fused preds (same shape) used to
+            compute AUROC/AP. Defaults to ``per_volume_predictions`` when
+            ``None`` (back-compat).
+        gt_masks: optional ``{pid: (Y,Z,X)}`` lesion masks for true
+            lesion-level FROC. When omitted, ``compute_froc`` falls back to
+            its central-cuboid proxy.
 
     Returns a dict mapping metric → ``{'value', 'ci_lower', 'ci_upper'}``.
+
+    Note: the sens@FP CIs are computed from the per-volume max-score
+    bootstrap (a proxy), not the lesion-level detection-map sweep used for
+    the point estimate. They are reported as **approximate** CIs in the
+    eval report — see ``Component 7`` audit (2026-04-29) for the rationale.
     """
     cfg = eval_cfg if eval_cfg is not None else EvalConfig()
     pids = sorted(per_volume_predictions.keys())
     if not pids:
         return {}
 
+    raw_for_scores = raw_predictions if raw_predictions is not None else per_volume_predictions
     score_label_pairs: list[tuple[float, int]] = []
     for pid in pids:
-        pred = per_volume_predictions[pid]
-        score = float(pred.get("score", 0.0))
-        label = int(per_volume_labels.get(pid, pred.get("label", 0)))
+        raw_pred = raw_for_scores.get(pid, per_volume_predictions[pid])
+        score = float(raw_pred.get("score", 0.0))
+        label = int(per_volume_labels.get(pid, raw_pred.get("label", 0)))
         score_label_pairs.append((score, label))
 
     # Point estimates.
@@ -191,6 +206,7 @@ def compute_volume_metrics(
         {pid: per_volume_predictions[pid] for pid in pids},
         {pid: int(per_volume_labels.get(pid, 0)) for pid in pids},
         fp_per_volume_levels=tuple(cfg.froc_fp_points),
+        gt_masks=gt_masks,
     )
 
     # Bootstrap.

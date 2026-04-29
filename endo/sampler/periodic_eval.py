@@ -172,7 +172,7 @@ class PeriodicDeepEvalCallback(pl.Callback):
 
     # ─── EMA helpers ─────────────────────────────────────────────────
 
-    def _maybe_swap_to_ema(self) -> bool:
+    def _maybe_swap_to_ema(self, pl_module: pl.LightningModule) -> bool:
         """Return True if we performed the swap (caller must restore)."""
         cb = self.ema_callback
         if cb is None:
@@ -180,8 +180,16 @@ class PeriodicDeepEvalCallback(pl.Callback):
         already_swapped = bool(getattr(cb, "_is_swapped", False))
         if already_swapped:
             return False
-        # Try common method names; tolerate absence in tests/mocks.
-        for name in ("swap_to_ema", "_swap_to_ema", "apply_shadow"):
+        # Prefer the typed swap_to_ema(pl_module); fall back to no-arg variants
+        # for older mocks/stubs.
+        fn = getattr(cb, "swap_to_ema", None)
+        if callable(fn):
+            try:
+                ok = fn(pl_module)
+            except TypeError:
+                ok = fn()
+            return bool(ok)
+        for name in ("_swap_to_ema", "apply_shadow"):
             fn = getattr(cb, name, None)
             if callable(fn):
                 fn()
@@ -214,7 +222,7 @@ class PeriodicDeepEvalCallback(pl.Callback):
         self.runtime_dir.mkdir(parents=True, exist_ok=True)
         self.deep_eval_dir.mkdir(parents=True, exist_ok=True)
 
-        did_swap = self._maybe_swap_to_ema()
+        did_swap = self._maybe_swap_to_ema(pl_module)
         try:
             datamodule = getattr(trainer, "datamodule", None)
             if datamodule is None:
