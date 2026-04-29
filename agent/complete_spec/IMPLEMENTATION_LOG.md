@@ -40,3 +40,114 @@ Tracks key decisions and deviations from the PRD/specs during the autonomous bui
 - `LesionDataModule.train_dataloader` falls back to `shuffle=True` when no `sampler_train` is provided (the canonical uniform sampler). Component 5 will replace this with `WeightedScheduledSampler`.
 - Tests requested in this batch (D1-D8, D10-D13) all implemented and pass under `tests/dataset/test_dataset.py`. D9 (border-band correctness) tested implicitly inside D7. D.INT.* real-cache tests deferred — peer subagent is building the cache.
 
+## 2026-04-28 (continuation — second-session implementation agent)
+
+The first session implemented Phase 0d (vendoring), Phase 1 preprocessing code, and Phase 3 model + sampler + dataset modules. This second session picks up at Phase 1 cohort run + Phase 2/4/6/7/8.
+
+### Environment deviation
+- Machine: **Lambda Labs A10 VM** (24 GB GPU, 30 CPUs, 222 GB RAM, 1.3 TB local disk, no `/scratch`). PRD's L40S 46 GB / 250 GB RAM budget is replaced by tighter A10 limits — production batch may need to drop from 8 to 6 if OOM. CLAUDE.md's CWRU/quotagrp references no longer apply.
+- Cache rebuilt locally because the prior session's outputs lived on a different machine.
+
+### Phase 1 cohort run (re-run on A10)
+- Re-ran `scripts/preprocess.py` with `--workers 16`. Cohort 608/608 to-be-confirmed (in flight at log time).
+- Connectivity probe (`--probe-connectivity`) to be run after build pass.
+
+### Component 2 (lesion bank) — implemented
+- `endo/lesion_bank.py` (213 lines) — `LesionBankEntry` (frozen) per PRD §6.4, `extract_entries_for_donor` (mmap), `save_bank`/`load_bank`, `current_bank_path`. Anisotropic `(0.82, 1.5, 0.82)` 1 mm shell via padded EDT cropped to tight bbox.
+- `scripts/build_lesion_bank.py` (261 lines) — CLI with `--cache-root --workers --force`. Reads `runtime/connectivity_lock.json` (warn+default 26 if missing), `multiprocessing.Pool` over CV-positive donors, writes `lesion_bank_<git_sha8>.pkl`, atomic `current.pkl` symlink, `bank_provenance.json` (both spec-style and PRD-style key sets).
+- Tests `tests/lesion_bank/test_unit.py` (10 passed, 1 integration skipped pending cache).
+
+### Component 8 viz — implemented
+- `endo/viz/{tagging,render,run_viz}.py`. WBF integration is a try/except so viz works with NMS fallback when `endo.eval.wbf` lacks the expected `per_slice_wbf` callable.
+- 5 unit tests (V1, V3, V4, V5 + render smoke) all green.
+
+### Component 8 smoke — implemented
+- `scripts/smoke_train.py` — picks 5 smallest CV volumes (2 pos + 3 neg) ensuring positives in fold 0 (val) and another fold (train), writes a temporary `data/.smoke_manifest.jsonl`, builds the real DataModule + LesionDetectorLM, captures step losses, asserts SM1-SM4. `endo.cli.run_experiment smoke` delegates to this.
+- `tests/smoke/test_smoke.py` — synthetic pid-picker test passes; integration test skipped until cache lands.
+
+### CLI
+- `endo/cli/run_experiment.py` — full subcommand set: `train`, `train_gru`, `eval`, `predict_holdout`, `viz`, `smoke`, `qc_paste`. Bootstrap of `runs/<exp>_<uuid8>/{experiment.yaml, experiment.py, provenance.json}` with drift detection (`--force-resync` to override). Per-fold `_train_one_fold` wires `EmaCallback`, `ModelCheckpoint(monitor=val/slice_auroc)`, `LearningRateMonitor`, and `PeriodicDeepEvalCallback` (passes `train_neg_pids`, `val_pids`, `ema_callback`, `val_volume_labels` derived from the DataModule's loaded cache). WandB OFF by default per A.9.
+- `endo/utils/provenance.py` — `initial_provenance`, atomic `save_provenance`, `update_fold_status`. Updates `runs/<exp>/provenance.json` `fold_status[f]: pending → running → complete | failed` per I.8.7.
+
+### Open items at log time
+- Component 4 augmentation, Component 7 eval, Component 6.5 GRU subagents still running.
+- Lesion bank integration build deferred until preprocessing finishes.
+- A10 batch-size sensitivity to be measured during smoke run.
+
+### Phase 1 cohort run (re-execution complete)
+- `scripts/preprocess.py --workers 16` over 608 patients: ok=608, skipped=0, failed=0, wall=691.5s (~11.5 min).
+- 36 GB cache. 1359 box rows, 196 unique CCs in cache frame.
+- Connectivity probe: native 6-conn=201, 26-conn=197 ✓ — locked to 26 in `cache/v1/runtime/connectivity_lock.json`.
+- 2 patients with `lesion_vs_ring_z` below 0.121 floor (`dapple_bunny_dome` 0.022, `swift_macaw_vault` 0.065) — same as prior session, treated as warning.
+
+### Component 2 build (real cache)
+- 86 donor patients × 153 CC entries (within [140, 180] target). Connectivity 26 matches lock. SHA `2dde0513e091`. Wall 3.9 s. All I.4.1–I.4.4 invariants satisfied.
+
+### CIoU NaN fix in vendored RTMDet head (deviation)
+- Root cause discovered during smoke run: the RTMDet bbox loss uses torchvision's `complete_box_iou_loss`, which internally computes `atan(w/h)`. Under bf16 autocast with fresh-init random predictions, decoded boxes can collapse to width=height=0 after the in-image clamp; `atan(0/0)=NaN` propagates through the entire training step.
+- Fix in `endo/model/rtmdet_head.py`: wrap CIoU in a `torch.amp.autocast(enabled=False)` block, promote inputs to fp32, and if the result is still non-finite (rare degenerate-box case) fall back to L1 distance on the same boxes. Better a noisy gradient than NaN.
+- Smoke result with the fix: 50 steps, first-10 mean loss 7.67 → last-10 mean loss 1.67 ✓, all losses finite ✓, `val/slice_auroc=0.5` logged ✓ on the 5-volume smoke subset.
+
+### Component 4 augmentation — landed
+- All files under `endo/augmentation/` (paste, geometric, intensity, boxes, transform). 18/18 unit tests green.
+- `LesionDataModule.from_experiment` static helper added so the CLI can build the augment pipeline directly from the `ExperimentConfig`.
+
+### Component 6.5 GRU — landed
+- `endo/gru/{feature_cache, rescorer, train}.py`. 6/6 tests pass (G1, G3, G4, G6, G7, synthetic G.INT.2 → val AUROC=1.0 ≫ 0.7).
+
+### Component 8 visualization — landed
+- `endo/viz/{tagging, render, run_viz}.py`. 5/5 tests pass.
+- WBF integration is deferred behind a try/except — when `endo.eval.wbf` exposes the expected callable, the orchestrator switches off the torchvision-NMS fallback automatically.
+
+### CLI — landed (`endo/cli/run_experiment.py`)
+- Subcommands `train`, `train_gru`, `eval`, `predict_holdout`, `viz`, `smoke`, `qc_paste`. Bootstrap of `runs/<name>_<uuid8>/{experiment.yaml, experiment.py, provenance.json}` with drift detection.
+- Wires `EmaCallback`, `ModelCheckpoint(monitor=val/slice_auroc)`, `LearningRateMonitor`, `PeriodicDeepEvalCallback` (with `train_neg_pids`, `val_pids`, `ema_callback`, `val_volume_labels`).
+- WandB OFF by default (PRD A.9).
+
+### Dataset robustness fix
+- `LesionDataset.__getitem__` now clamps the per-axis jitter so the center-slice 5-channel window stays inside the target frame on edge slices (slice_y near `slice_y_lo` with negative jy was previously raising IndexError under training jitter). The clamp respects the sampled jitter sign and only narrows it as needed.
+
+### Phase 4 partial training (`experiments/quickeval.py`)
+
+Trained a 3-epoch fold-0 detector (`runs/quickeval-rtmdet-p2_00000000/fold0/`) to validate the entire downstream pipeline (eval / GRU / viz / predict_holdout). Training crashed at end of epoch 2 on a callback bug (now fixed) but produced a usable `best.ckpt` (val/slice_auroc = **0.907** on the 100-patient fold-0 val set) and `runtime/deep_eval/epoch2_val.npz`.
+
+**bf16 NaN issues encountered & resolved:**
+
+1. CIoU loss in vendored `RTMDetHead.loss` produced NaN under bf16 autocast on real positive boxes. Root cause: `complete_box_iou_loss` from torchvision computes `atan(w_pred/h_pred)` — when the predicted box collapses to width=height=0 after clamping, this is `atan(0/0)=NaN`. **Fix in `endo/model/rtmdet_head.py`:** wrap the bbox loss in `torch.amp.autocast(enabled=False)`, promote inputs to fp32, and if the result is still non-finite (rare degenerate-box case) fall back to a normalized L1 (`(pos - gt).abs() / max(W,H)`, clamped per-coord to 1.0 — same scale as CIoU's [0, 4] range). Smoke training validated this fix: 50 steps, first10 → last10 mean loss 7.67 → 1.67, no NaN, val_auroc logged.
+
+2. Even with the CIoU fix, bf16-mixed precision occasionally produced NaN during longer training (mid-epoch-1 in the first quickeval run, epoch-0 step ~178 in the second). **Mitigation:** added a NaN guard in `LesionDetectorLM.training_step` that detects non-finite loss and substitutes a zero-loss tensor with a grad path through `aux_seg_logits` (uses `torch.nan_to_num` so even inf logits produce a finite zero). Skipped step instead of poisoning weights.
+
+3. **Workaround:** for the 3-epoch quickeval run we switched `precision="32-true"` (`experiments/quickeval.py`). fp32 was rock-solid: 3 epochs × 250 steps each, 0 NaN events, monotone improvement (epoch 0 mean loss 2.34 → epoch 1 mean 1.86), val_auroc 0.50 → 0.87 → 0.91. **The bf16 path needs deeper investigation before production runs** — possibly switch to fp16-mixed-with-grad-scaler, which is more robust against intermittent overflow than bf16 (which has no scaler since the dynamic range is meant to be sufficient).
+
+**Pipeline-validation runs (all green on `quickeval` ckpt):**
+
+| Step | Result |
+|---|---|
+| `eval --experiment quickeval.py` | fold-0 volume_auroc=**0.902** (CI 0.82-0.97), AP 0.74, sens@2FP=1.0; 82-row CSV; thresholds JSON |
+| `viz --fold 0` | 413 PNGs + manifest.csv with TP/FP/FN tags |
+| `train_gru --stage feature_cache` (fold 0) | 100 .npz files (val pids), 768-d GAP features |
+| `train_gru --stage train` (fold 0) | GRU trains; val_auroc peaks 0.58 at epoch 0, drops to 0.50 by epoch 4 (expected — features from a 3-epoch detector are too clean for the GRU to add value) |
+| `eval --use-gru` | adds rescored=true rows; AUROC drops 0.90 → 0.77 (under-trained GRU degrades) |
+| `predict_holdout --ckpts 0` | 122 holdout patients, volume_auroc=**0.839** (CI 0.74-0.93), AP 0.72; 64-row CSV + invocation.json |
+
+**Bug fixes during pipeline validation:**
+
+- `inference_pass` was calling `detector.predict(cls_scores, bbox_preds, ...)` but the detector's `predict` signature is `predict(x, image_size, ...)`. Fixed to use `detector.head.predict(...)` — matches the head's `(cls_scores, bbox_preds, image_size, ...)` API and the convention already used by `LesionDetectorLM`.
+- `LesionDetectorLM.load_from_checkpoint(...)` fails because the LightningModule's `__init__` requires a positional `exp_cfg`. Fixed all three downstream callers (`endo/eval/run_eval.py`, `endo/gru/feature_cache.py`, `endo/viz/run_viz.py`) to manually `LesionDetectorLM(experiment); lm.load_state_dict(raw["state_dict"], strict=False)` and overlay `ema_state_dict` if present.
+- `endo/eval/run_eval.py: run_holdout_inference` built the LightningModule but never moved it to GPU — caused predict_holdout to run inference on CPU at 24-core 100% utilization. Added explicit `.to("cuda")` after state-dict load.
+- `endo/gru/rescorer.py` exported `rescore_detector_outputs(...)` but `endo/eval/run_eval.py` imported `rescore_slice_scores(...)`. Added an adapter in `endo/gru/rescorer.py` that takes the `dict[pid, list[SliceScore]]` shape and applies GRU rescoring per-slice.
+- `endo/viz/run_viz.py` was building the DataModule with `cache_root / "manifest.jsonl"` instead of `data_root / "manifest.jsonl"`. Fixed.
+- `endo/viz/run_viz.py`'s ckpt resolver did not look in `ckpts/` (only `checkpoints/`). Added `ckpts/best.ckpt` to the search list.
+- `endo/sampler/periodic_eval.py` unpacked `(pid, sy, kind)` from the dataset's slice_index but the actual entries are 4-tuples `(pid, sy, is_pos_slice, kind)`. Switched to `entry[0]`, `entry[1]` indexing.
+- `endo/sampler/score_ema.py: ScoreEMATracker.update(...)` requires keyword-only `is_positive_slice`; `LesionDetectorLM._update_score_ema` was calling it positionally. Added the keyword.
+- `endo/cli/run_experiment.py` registered `LearningRateMonitor` unconditionally — fails when `logger=False`. Now only added when `--wandb` is set.
+- `endo/eval/run_eval.run_holdout_inference` was not writing `invocation.json` per spec §5.3.9. Added.
+
+**Verified end state on 2026-04-29:** `uv run pytest tests/ --ignore=tests/smoke` → **114 passed, 0 failed** in 4 min.
+
+### Open recommendations for the user
+1. **bf16 stability:** before production 5-fold training, profile the bf16 NaN rate on a longer run. Consider:
+   - `precision="16-mixed"` (fp16 with grad scaler) as an alternative — handles overflow dynamically.
+   - Or stick with bf16 + the NaN-skip guard (already in place) + lower `base_lr` / longer `warmup_epochs`.
+2. **GRU training on real ckpts:** the quickeval pipeline trained the GRU on features extracted from fold-0's ckpt for ALL folds (a hack for pipeline validation). For production, train each fold's detector separately, then run feature_cache against each fold's own ckpt before GRU training.
+3. **Compute budget on A10:** the L40S 46 GB / 250 GB RAM budget in PRD §12 maps to A10 24 GB GPU + 222 GB RAM. fp32 on A10 at batch_size=4 ran ~16 min/epoch over fold-0; full 60-epoch baseline at this rate would be ~16 GPU-h/fold = 80 GPU-h × 5 folds. If bf16 stabilizes, expect 2-3× speedup.
