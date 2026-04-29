@@ -16,11 +16,13 @@ from endo.config import (
     GRUConfig,
     GeometricConfig,
     IntensityConfig,
+    LoggingConfig,
     ModelConfig,
     PasteConfig,
     PathsConfig,
     SamplerConfig,
     TrainingConfig,
+    WandbConfig,
 )
 
 experiment = ExperimentConfig(
@@ -57,7 +59,7 @@ experiment = ExperimentConfig(
         warmup_epochs=1,
         aux_seg_weight=0.3,
         ema_decay=0.999,
-        precision="bf16-mixed",
+        precision="16-mixed",
         gradient_clip_val=1.0,
         log_every_n_steps=10,
     ),
@@ -88,6 +90,9 @@ experiment = ExperimentConfig(
         bootstrap_seed=42,
         large_threshold_grid=[0.01, 0.03, 0.05, 0.10],
         small_threshold_grid=[0.10, 0.20, 0.30, 0.40, 0.50],
+    ),
+    logging=LoggingConfig(
+        wandb=WandbConfig(enabled=True, group="baseline-cv"),
     ),
     seed=42,
 )
