@@ -45,7 +45,12 @@ experiment = ExperimentConfig(
         num_workers=4,
         base_lr=2e-4,
         warmup_epochs=0,
-        precision="bf16-mixed",
+        # 32-true mirrors `experiments/quickeval.py` — bf16-mixed has shown
+        # intermittent NaN under runs longer than the smoke test on this
+        # repo (see top-level CLAUDE.md "Precision selection"). The e2e
+        # gate's purpose is to validate the W&B + logging plumbing, not to
+        # debug precision instability.
+        precision="32-true",
         gradient_clip_val=1.0,
         log_every_n_steps=10,
     ),

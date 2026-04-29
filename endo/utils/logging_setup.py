@@ -28,6 +28,27 @@ _DATEFMT = "%Y-%m-%d %H:%M:%S"
 # stack up duplicate handlers.
 _OWNED_ATTR = "_endo_logging_owned"
 
+# Third-party loggers we cap at WARNING regardless of root level to keep
+# the file log focused on endo.* records.
+_NOISY_LOGGERS = (
+    "git",
+    "git.cmd",
+    "git.util",
+    "urllib3",
+    "httpx",
+    "httpcore",
+    "asyncio",
+    "fsspec",
+    "PIL",
+    "matplotlib",
+    "wandb",
+    "wandb.sdk",
+    "filelock",
+    "h5py",
+    "huggingface_hub",
+    "timm",
+)
+
 
 def _resolve_level(name: str) -> int:
     return getattr(logging, str(name).upper(), logging.INFO)
@@ -76,6 +97,13 @@ def setup_logging(
     sh.setFormatter(fmt)
     setattr(sh, _OWNED_ATTR, True)
     root.addHandler(sh)
+
+    # Silence noisy third-party loggers regardless of root-level configured.
+    for name in _NOISY_LOGGERS:
+        try:
+            logging.getLogger(name).setLevel(logging.WARNING)
+        except Exception:  # noqa: BLE001
+            pass
 
     file_path: Path | None = None
     if run_dir is not None:

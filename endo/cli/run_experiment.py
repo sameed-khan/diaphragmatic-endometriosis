@@ -316,6 +316,7 @@ def _train_one_fold(
     from endo.sampler.periodic_eval import PeriodicDeepEvalCallback
     from endo.utils.aug_counters import AugStatsCallback
     from endo.utils.step_timer import StepTimerCallback
+    from endo.utils.train_viz import TrainTimeVizCallback
 
     fold_dir = run_dir / f"fold{fold}"
     ckpt_dir = fold_dir / "ckpts"
@@ -382,6 +383,10 @@ def _train_one_fold(
     aug_pipeline = getattr(dm, "augment_train", None)
     if aug_pipeline is not None:
         callbacks.append(AugStatsCallback(aug_pipeline))
+    if experiment.logging.viz.log_during_training:
+        callbacks.append(
+            TrainTimeVizCallback(experiment=experiment, fold=fold, fold_dir=fold_dir)
+        )
 
     if wandb_logger is not False:
         callbacks.append(LearningRateMonitor(logging_interval="step"))

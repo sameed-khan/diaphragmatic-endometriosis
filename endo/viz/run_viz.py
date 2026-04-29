@@ -141,17 +141,23 @@ def visualize_predictions_for_fold(
         out_dir = fold_dir / "viz" / "epoch_post-train"
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    ckpt_path = _resolve_best_ckpt(run_dir, fold)
-    sentinel = out_dir / ".ckpt_mtime"
-    ckpt_mtime = ckpt_path.stat().st_mtime
     manifest_path = out_dir / "manifest.csv"
-    if (
-        sentinel.exists()
-        and manifest_path.exists()
-        and abs(float(sentinel.read_text().strip() or "0") - ckpt_mtime) < 1e-6
-    ):
-        # Idempotent short-circuit: ckpt unchanged → existing output is current.
-        return out_dir
+    # Idempotency only applies when we're loading from disk; a live
+    # LightningModule (training-time viz) always re-renders.
+    if lightning_module is None:
+        ckpt_path = _resolve_best_ckpt(run_dir, fold)
+        sentinel = out_dir / ".ckpt_mtime"
+        ckpt_mtime = ckpt_path.stat().st_mtime
+        if (
+            sentinel.exists()
+            and manifest_path.exists()
+            and abs(float(sentinel.read_text().strip() or "0") - ckpt_mtime) < 1e-6
+        ):
+            # Idempotent short-circuit: ckpt unchanged → existing output is current.
+            return out_dir
+    else:
+        ckpt_path = None
+        ckpt_mtime = None
 
     # Build the DataModule if not provided.
     if datamodule is None:
@@ -291,7 +297,9 @@ def visualize_predictions_for_fold(
         for r in rows:
             writer.writerow(r)
 
-    sentinel.write_text(f"{ckpt_mtime}")
+    if ckpt_mtime is not None:
+        sentinel = out_dir / ".ckpt_mtime"
+        sentinel.write_text(f"{ckpt_mtime}")
     return out_dir
 
 
