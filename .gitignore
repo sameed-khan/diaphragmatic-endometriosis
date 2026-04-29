@@ -64,3 +64,4 @@ history.txt
 # --- miscellaneous ---
 agent/*.json
 agent/*.csv
+.agent-complete
