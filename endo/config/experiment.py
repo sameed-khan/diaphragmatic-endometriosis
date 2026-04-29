@@ -13,6 +13,7 @@ from pydantic import BaseModel, Field, model_validator
 from .augmentation import AugmentationConfig
 from .eval import EvalConfig
 from .gru import GRUConfig
+from .logging import LoggingConfig
 from .model import ModelConfig
 from .paths import PathsConfig
 from .sampler import SamplerConfig
@@ -39,6 +40,7 @@ class ExperimentConfig(BaseModel):
     augmentation: AugmentationConfig = Field(default_factory=AugmentationConfig)
     gru: GRUConfig = Field(default_factory=GRUConfig)
     eval: EvalConfig = Field(default_factory=EvalConfig)
+    logging: LoggingConfig = Field(default_factory=LoggingConfig)
 
     seed: int = 42
 
@@ -83,9 +85,16 @@ class ExperimentConfig(BaseModel):
 
         Used by ``run_experiment.py`` to detect drift between the live
         experiment file and the materialized ``runs/<exp>/experiment.yaml``.
+
+        The ``logging.*`` subtree is excluded from drift comparison — toggling
+        wandb mode, log levels, or upload gates between resumes does NOT
+        trip the drift guard.
         """
         a = json.loads(self.model_dump_json())
         b = json.loads(other.model_dump_json())
+        # Drift-exempt: logging configuration may be tweaked between resumes.
+        a.pop("logging", None)
+        b.pop("logging", None)
         diffs: list[str] = []
         _walk(a, b, prefix="", out=diffs)
         return diffs

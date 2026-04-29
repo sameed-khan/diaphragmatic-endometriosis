@@ -108,6 +108,10 @@ def visualize_predictions_for_fold(
     # Hooks for testing — both default to the production wiring.
     datamodule: Any | None = None,
     lightning_module: Any | None = None,
+    sample_tp: int | None = None,
+    sample_fp: int | None = None,
+    sample_fn: int | None = None,
+    rng_seed: int | None = None,
 ) -> Path:
     """Render per-slice prediction overlays for a fold's validation set.
 
@@ -130,7 +134,11 @@ def visualize_predictions_for_fold(
     """
     run_dir = experiment.run_dir()
     fold_dir = run_dir / f"fold{fold}"
-    out_dir = Path(output_dir) if output_dir is not None else fold_dir / "viz"
+    if output_dir is not None:
+        out_dir = Path(output_dir)
+    else:
+        # Default to the post-train viz subdir (wandb-logging plan §3.1).
+        out_dir = fold_dir / "viz" / "epoch_post-train"
     out_dir.mkdir(parents=True, exist_ok=True)
 
     ckpt_path = _resolve_best_ckpt(run_dir, fold)
@@ -285,3 +293,76 @@ def visualize_predictions_for_fold(
 
     sentinel.write_text(f"{ckpt_mtime}")
     return out_dir
+
+
+def sample_tp_fp_fn(
+    viz_dir: Path,
+    *,
+    n_tp: int = 20,
+    n_fp: int = 20,
+    n_fn: int = 20,
+    seed: int = 0,
+    sample_subdir_name: str = "wandb_sample",
+) -> Path:
+    """Reproducibly select up to ``n_tp + n_fp + n_fn`` PNGs from ``viz_dir``.
+
+    Reads ``viz_dir/manifest.csv``, groups rows by ``event_type``, samples
+    deterministically (seeded), and copies the chosen PNGs into
+    ``viz_dir/<sample_subdir_name>/``. Returns that subdir's path.
+
+    The directory is overwritten on each call so the contents are always
+    consistent with the seed + manifest.
+    """
+    import random
+    import shutil
+
+    viz_dir = Path(viz_dir)
+    manifest_path = viz_dir / "manifest.csv"
+    if not manifest_path.exists():
+        raise FileNotFoundError(f"viz manifest not found: {manifest_path}")
+
+    rows: dict[str, list[dict[str, str]]] = {"tp": [], "fp": [], "fn": []}
+    with manifest_path.open("r", newline="") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            ev = (row.get("event_type") or "").lower()
+            if ev in rows:
+                rows[ev].append(row)
+
+    # Dedup by png_path (rows can repeat per highlighted entity).
+    by_event: dict[str, list[str]] = {}
+    for ev, rs in rows.items():
+        seen: set[str] = set()
+        ordered: list[str] = []
+        for r in rs:
+            p = r.get("png_path") or ""
+            if p and p not in seen:
+                seen.add(p)
+                ordered.append(p)
+        by_event[ev] = ordered
+
+    rng = random.Random(int(seed))
+    counts = {"tp": int(n_tp), "fp": int(n_fp), "fn": int(n_fn)}
+    sample_dir = viz_dir / sample_subdir_name
+    if sample_dir.exists():
+        shutil.rmtree(sample_dir)
+    sample_dir.mkdir(parents=True, exist_ok=True)
+
+    for ev, k in counts.items():
+        candidates = by_event.get(ev, [])
+        if not candidates or k <= 0:
+            continue
+        pick = rng.sample(candidates, k=min(k, len(candidates)))
+        for src in pick:
+            src_path = Path(src)
+            if not src_path.exists():
+                # Manifest may have an absolute path that is now relative; try
+                # resolving against viz_dir.
+                src_path = viz_dir / src_path.name
+            if not src_path.exists():
+                continue
+            try:
+                shutil.copy2(src_path, sample_dir / f"{ev}_{src_path.name}")
+            except Exception:  # noqa: BLE001
+                continue
+    return sample_dir

@@ -12,7 +12,7 @@ from typing import Any
 import numpy as np
 import pytorch_lightning as pl
 import torch
-from sklearn.metrics import roc_auc_score
+from sklearn.metrics import average_precision_score, roc_auc_score
 from torch import Tensor
 
 from endo.config import ExperimentConfig
@@ -60,6 +60,10 @@ class LesionDetectorLM(pl.LightningModule):
         self._val_max_scores: list[float] = []
         self._val_labels: list[int] = []
 
+        # Cumulative count of NaN/Inf training steps that were skipped (used
+        # by the wandb-logging gate to detect silent training degeneracy).
+        self._nan_skip_count: int = 0
+
     # ------------------------------------------------------------------
     # Forward / inference.
     # ------------------------------------------------------------------
@@ -101,6 +105,17 @@ class LesionDetectorLM(pl.LightningModule):
             safe = torch.nan_to_num(aux_seg_logits.float(), nan=0.0, posinf=0.0, neginf=0.0)
             total = safe.sum() * 0.0
             components = {k: total.detach() for k in components}
+            self._nan_skip_count += 1
+            try:
+                self.log(
+                    "train/skipped_steps_nan",
+                    float(self._nan_skip_count),
+                    on_step=True,
+                    on_epoch=True,
+                    prog_bar=False,
+                )
+            except Exception:  # noqa: BLE001
+                pass
 
         # Per-step logging (Lightning aggregates by ``log_every_n_steps``).
         log_kw = {
@@ -200,10 +215,40 @@ class LesionDetectorLM(pl.LightningModule):
         scores = np.asarray(self._val_max_scores, dtype=np.float64)
         if labels.size == 0 or len(set(labels.tolist())) < 2:
             auroc = 0.0
+            auprc = 0.0
         else:
             auroc = float(roc_auc_score(labels, scores))
+            try:
+                auprc = float(average_precision_score(labels, scores))
+            except Exception:  # noqa: BLE001
+                auprc = 0.0
         # ModelCheckpoint monitor key (PRD §13 amendment A.8).
         self.log("val/slice_auroc", auroc, on_epoch=True, prog_bar=True)
+        self.log("val/slice_auprc", auprc, on_epoch=True, prog_bar=False)
+
+    # ------------------------------------------------------------------
+    # Gradient-norm logging (wandb-logging plan §3.1).
+    # ------------------------------------------------------------------
+    def on_after_backward(self) -> None:
+        try:
+            total = 0.0
+            for p in self.model.parameters():
+                if p.grad is None:
+                    continue
+                g = p.grad.detach()
+                total += float(g.norm(2).item()) ** 2
+            grad_norm = float(total ** 0.5)
+            if not (grad_norm == grad_norm):  # NaN guard
+                grad_norm = 0.0
+            self.log(
+                "train/grad_norm",
+                grad_norm,
+                on_step=True,
+                on_epoch=True,
+                prog_bar=False,
+            )
+        except Exception:  # noqa: BLE001
+            pass
 
     # ------------------------------------------------------------------
     # Optimizer + LR schedule.

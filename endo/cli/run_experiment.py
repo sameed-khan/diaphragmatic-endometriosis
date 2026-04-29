@@ -13,7 +13,9 @@ Conventions:
   * one experiment file per run, located at ``experiments/<name>.py``
   * artifacts under ``runs/<name>_<uuid8>/``
   * fold-as-run; multi-fold execution is sequential by default
-  * WandB OFF unless ``--wandb`` (PRD A.9)
+  * WandB controlled via ``LoggingConfig.wandb.enabled`` (config) or
+    ``--wandb`` / ``--no-wandb`` (CLI override). See top-level CLAUDE.md
+    for the contract.
   * holdout is allowed only inside the ``predict_holdout`` subcommand
 """
 
@@ -24,16 +26,24 @@ import logging
 import shutil
 import sys
 import time
-import uuid
 from pathlib import Path
 from typing import Any, Sequence
 
 from endo.config import ExperimentConfig, load_experiment
+from endo.config.logging import LoggingConfig
+from endo.utils.logging_setup import setup_logging
 from endo.utils.provenance import (
     initial_provenance,
-    load_provenance,
     save_provenance,
     update_fold_status,
+)
+from endo.utils.wandb_init import (
+    build_wandb_logger,
+    build_wandb_run,
+    finish_run,
+    is_wandb_enabled,
+    log_summary,
+    upload_artifact,
 )
 
 
@@ -45,16 +55,29 @@ log = logging.getLogger("endo.cli")
 # =============================================================================
 
 
-def _setup_logging(level: int = logging.INFO) -> None:
-    if logging.getLogger().handlers:
-        logging.getLogger().setLevel(level)
-        return
-    logging.basicConfig(
-        level=level,
-        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
-        stream=sys.stdout,
-    )
+def _apply_cli_logging_overrides(experiment: ExperimentConfig, args: argparse.Namespace) -> None:
+    """Apply ``--wandb / --no-wandb / --wandb-mode / -v`` overrides in place."""
+    cfg: LoggingConfig = experiment.logging
+    wandb_arg = getattr(args, "wandb", None)
+    if wandb_arg is True:
+        cfg.wandb.enabled = True
+    elif wandb_arg is False:
+        cfg.wandb.enabled = False
+    mode = getattr(args, "wandb_mode", None)
+    if mode:
+        cfg.wandb.mode = mode  # type: ignore[assignment]
+    verbose = int(getattr(args, "verbose", 0) or 0)
+    if verbose >= 2:
+        cfg.file.level_console = "DEBUG"
+        cfg.file.level_file = "DEBUG"
+    elif verbose == 1:
+        cfg.file.level_console = "DEBUG"
+
+
+def _setup_run_logging(
+    experiment: ExperimentConfig, run_dir: Path, fold: int | None = None
+) -> None:
+    setup_logging(experiment.logging.file, run_dir=run_dir, fold=fold)
 
 
 def _parse_folds(arg_fold: int | None, arg_folds: str | None) -> list[int]:
@@ -108,6 +131,9 @@ def _bootstrap_run_dir(
                 "Experiment file differs from materialized experiment.yaml. "
                 "Use --force-resync if this is intentional."
             )
+        # Rewrite the materialized YAML so logging settings track the file
+        # (drift-exempt — see ExperimentConfig.diff).
+        experiment.to_yaml(yaml_path)
     else:
         experiment.to_yaml(yaml_path)
         shutil.copy2(experiment_path, py_copy_path)
@@ -119,6 +145,38 @@ def _bootstrap_run_dir(
     return run_dir
 
 
+def _gpu_summary() -> dict[str, Any]:
+    out: dict[str, Any] = {"cuda": False}
+    try:
+        import torch
+
+        out["cuda"] = bool(torch.cuda.is_available())
+        out["torch_version"] = str(torch.__version__)
+        if torch.cuda.is_available():
+            idx = torch.cuda.current_device()
+            out["device_index"] = int(idx)
+            out["gpu_name"] = torch.cuda.get_device_name(idx)
+            try:
+                props = torch.cuda.get_device_properties(idx)
+                out["gpu_total_memory_gib"] = round(props.total_memory / (1024**3), 2)
+            except Exception:  # noqa: BLE001
+                pass
+            try:
+                out["cuda_version"] = str(torch.version.cuda)
+            except Exception:  # noqa: BLE001
+                pass
+    except Exception:  # noqa: BLE001
+        pass
+    return out
+
+
+def _experiment_config_dict(experiment: ExperimentConfig) -> dict[str, Any]:
+    """Serialize the experiment config as a plain dict for W&B config logging."""
+    import json as _json
+
+    return _json.loads(experiment.model_dump_json())
+
+
 # =============================================================================
 # train
 # =============================================================================
@@ -128,17 +186,11 @@ def _build_datamodule_for_train(
     experiment: ExperimentConfig,
     fold: int,
 ):
-    """Construct a configured ``LesionDataModule`` for training of one fold."""
-    # Lazy imports — keep CLI startup snappy and tolerant of missing optional
-    # components.
     from endo.data.datamodule import LesionDataModule
 
     paths = experiment.paths
     train_cfg = experiment.training
 
-    # Try to construct training augmentation. If Component 4 isn't ready or any
-    # required artifact (lesion bank) is missing, we fall back to
-    # ``augment_train=None`` (no online augmentation).
     augment_train = _try_build_train_augmentation(experiment)
 
     dm = LesionDataModule(
@@ -151,7 +203,7 @@ def _build_datamodule_for_train(
         slice_window=train_cfg.slice_window,
         target_input_shape=train_cfg.target_input_shape,
         augment_train=augment_train,
-        sampler_train=None,  # filled in after setup() once slice_index is built
+        sampler_train=None,
         allow_holdout=False,
         rng_seed=experiment.seed,
     )
@@ -184,10 +236,8 @@ def _try_build_train_augmentation(experiment: ExperimentConfig):
 
 
 def _build_sampler(dm, experiment: ExperimentConfig, fold: int):
-    """Construct the WeightedScheduledSampler from the dm's slice_index."""
     from endo.sampler.weighted import WeightedScheduledSampler
 
-    # The datamodule emits 4-tuples; the sampler expects 3-tuples (pid, sy, kind).
     sl = [(p, sy, kind) for (p, sy, _ispos, kind) in dm._train_slice_index]
     sampler = WeightedScheduledSampler(
         slice_index=sl,
@@ -197,11 +247,63 @@ def _build_sampler(dm, experiment: ExperimentConfig, fold: int):
     return sampler
 
 
+def _log_dataset_summary(
+    wandb_logger,
+    experiment: ExperimentConfig,
+    dm,
+    fold: int,
+) -> None:
+    """Log a once-per-run dataset / model summary to W&B."""
+    if wandb_logger is False or wandb_logger is None:
+        return
+    try:
+        from endo.utils.provenance import get_git_sha
+
+        train_pids = list(getattr(dm, "_train_pids", []))
+        val_pids = list(getattr(dm, "_val_pids", []))
+        train_index = list(getattr(dm, "_train_slice_index", []))
+        val_index = list(getattr(dm, "_val_slice_index", []))
+
+        def _pos_neg_ratio(pids: list[str]) -> float:
+            cache = getattr(dm, "_cache", {})
+            pos = neg = 0
+            for pid in pids:
+                row = cache.get(pid, {}).get("manifest_row", {})
+                if row.get("label") == "positive":
+                    pos += 1
+                else:
+                    neg += 1
+            if neg == 0:
+                return float("inf")
+            return float(pos) / float(neg)
+
+        gpu = _gpu_summary()
+        summary = {
+            "n_train_volumes": len(train_pids),
+            "n_val_volumes": len(val_pids),
+            "n_train_slice_index": len(train_index),
+            "n_val_slice_index": len(val_index),
+            "pos_neg_volume_ratio_train": _pos_neg_ratio(train_pids),
+            "pos_neg_volume_ratio_val": _pos_neg_ratio(val_pids),
+            "fold": int(fold),
+            "experiment_uuid": experiment.uuid,
+            "experiment_short_uuid": experiment.short_uuid,
+            "git_sha": get_git_sha(short=True),
+            **gpu,
+        }
+        for k, v in summary.items():
+            try:
+                wandb_logger.experiment.summary[k] = v
+            except Exception:  # noqa: BLE001
+                pass
+    except Exception as e:  # noqa: BLE001
+        log.debug("dataset summary logging skipped (%s)", e)
+
+
 def _train_one_fold(
     experiment: ExperimentConfig,
     fold: int,
     run_dir: Path,
-    use_wandb: bool,
     resume: bool,
 ) -> dict[str, Any]:
     """Train one fold. Returns a small status dict."""
@@ -212,6 +314,8 @@ def _train_one_fold(
     from endo.ema_callback import EmaCallback
     from endo.lightning_module import LesionDetectorLM
     from endo.sampler.periodic_eval import PeriodicDeepEvalCallback
+    from endo.utils.aug_counters import AugStatsCallback
+    from endo.utils.step_timer import StepTimerCallback
 
     fold_dir = run_dir / f"fold{fold}"
     ckpt_dir = fold_dir / "ckpts"
@@ -222,6 +326,24 @@ def _train_one_fold(
     runtime_dir.mkdir(parents=True, exist_ok=True)
     deep_eval_dir.mkdir(parents=True, exist_ok=True)
 
+    # Re-init logging with the per-fold file handler.
+    _setup_run_logging(experiment, run_dir, fold=fold)
+    log.info("===== fold %d start =====", fold)
+
+    use_wandb = is_wandb_enabled(experiment.logging)
+    wandb_logger = (
+        build_wandb_logger(experiment, fold=fold, stage="detector", save_dir=fold_dir)
+        if use_wandb
+        else False
+    )
+    if wandb_logger is not False:
+        try:
+            wandb_logger.experiment.config.update(
+                _experiment_config_dict(experiment), allow_val_change=True
+            )
+        except Exception:  # noqa: BLE001
+            pass
+
     # 1. DataModule + sampler.
     dm = _build_datamodule_for_train(experiment, fold)
     dm.setup()
@@ -231,7 +353,7 @@ def _train_one_fold(
     # 2. Model.
     lm = LesionDetectorLM(experiment)
 
-    # 3. Wire score-EMA tracker into the LightningModule (Component 5 §5).
+    # 3. Wire score-EMA tracker into the LightningModule.
     try:
         from endo.sampler.score_ema import ScoreEMATracker
 
@@ -256,11 +378,15 @@ def _train_one_fold(
             auto_insert_metric_name=False,
         )
     )
-    # LearningRateMonitor requires a logger — only add when one is wired up.
-    if use_wandb:
+    callbacks.append(StepTimerCallback())
+    aug_pipeline = getattr(dm, "augment_train", None)
+    if aug_pipeline is not None:
+        callbacks.append(AugStatsCallback(aug_pipeline))
+
+    if wandb_logger is not False:
         callbacks.append(LearningRateMonitor(logging_interval="step"))
 
-    # PeriodicDeepEvalCallback wires the hard-pool + deep-eval cache.
+    # PeriodicDeepEvalCallback.
     try:
         train_neg_pids = [
             pid for pid in dm._train_pids
@@ -284,24 +410,7 @@ def _train_one_fold(
     except Exception as e:  # noqa: BLE001
         log.warning("PeriodicDeepEvalCallback wiring failed (%s).", e)
 
-    # 5. Logger (default OFF; opt-in WandB).
-    logger: Any = False
-    if use_wandb:
-        try:
-            from pytorch_lightning.loggers import WandbLogger
-
-            logger = WandbLogger(
-                project="diaphragmatic-endometriosis",
-                group=f"{experiment.name}_{experiment.short_uuid}",
-                name=f"fold{fold}",
-                tags=list({**experiment.tags, "fold": str(fold)}.values()),
-                save_dir=str(fold_dir),
-            )
-        except Exception as e:  # noqa: BLE001
-            log.warning("WandB logger requested but failed to init: %s", e)
-            logger = False
-
-    # 6. Trainer.
+    # 5. Trainer.
     accelerator = "gpu" if torch.cuda.is_available() else "cpu"
     devices: list[int] | int = [0] if accelerator == "gpu" else 1
     trainer = pl.Trainer(
@@ -312,12 +421,14 @@ def _train_one_fold(
         accelerator=accelerator,
         devices=devices,
         callbacks=callbacks,
-        logger=logger,
+        logger=wandb_logger if wandb_logger is not False else False,
         enable_checkpointing=True,
         default_root_dir=str(fold_dir),
         deterministic=False,
         benchmark=True,
     )
+
+    _log_dataset_summary(wandb_logger, experiment, dm, fold)
 
     # 7. Fit.
     update_fold_status(run_dir / "provenance.json", fold, "running")
@@ -352,19 +463,135 @@ def _train_one_fold(
         "wandb_used": bool(use_wandb),
     }
     save_provenance(fold_dir / "fold_status.json", fold_status)
+
+    # 9. Post-training viz (always when wandb is enabled, otherwise best-effort).
+    _maybe_post_training_viz(experiment, fold, run_dir, wandb_logger)
+
+    # 10. Upload best.ckpt + experiment artifacts.
+    if wandb_logger is not False:
+        try:
+            run = wandb_logger.experiment
+            upload_artifact(
+                run,
+                name=f"config-{experiment.short_uuid}",
+                artifact_type="config",
+                paths=[run_dir / "experiment.yaml", run_dir / "experiment.py"],
+                aliases=["current"],
+            )
+            upload_artifact(
+                run,
+                name=f"provenance-{experiment.short_uuid}",
+                artifact_type="provenance",
+                paths=[run_dir / "provenance.json"],
+            )
+            if (
+                experiment.logging.wandb.upload_checkpoints
+                and best_ckpt.exists()
+            ):
+                upload_artifact(
+                    run,
+                    name=f"detector-fold{fold}-{experiment.short_uuid}",
+                    artifact_type="model",
+                    paths=[best_ckpt],
+                    aliases=["best"],
+                )
+        except Exception as e:  # noqa: BLE001
+            log.warning("artifact upload at fit-end failed (%s)", e)
+        finally:
+            try:
+                wandb_logger.experiment.finish()
+            except Exception:  # noqa: BLE001
+                pass
+
+    log.info(
+        "fold %d finished in %.1fs best_val_slice_auroc=%s",
+        fold,
+        elapsed,
+        f"{best_metric:.4f}" if best_metric == best_metric else "nan",
+    )
     return fold_status
 
 
+def _maybe_post_training_viz(
+    experiment: ExperimentConfig,
+    fold: int,
+    run_dir: Path,
+    wandb_logger,
+) -> None:
+    """Render `<fold_dir>/viz/epoch_post-train/*.png` and upload sampled slice."""
+    if wandb_logger is False or wandb_logger is None:
+        return
+    try:
+        from endo.viz.run_viz import sample_tp_fp_fn, visualize_predictions_for_fold
+
+        fold_dir = run_dir / f"fold{fold}"
+        viz_dir = fold_dir / "viz" / "epoch_post-train"
+        log.info("rendering post-training viz under %s", viz_dir)
+        try:
+            visualize_predictions_for_fold(
+                experiment=experiment,
+                fold=fold,
+                output_dir=viz_dir,
+            )
+        except FileNotFoundError as e:
+            log.warning("post-train viz skipped (no checkpoint): %s", e)
+            return
+        if not experiment.logging.wandb.upload_viz_artifacts:
+            return
+        viz_cfg = experiment.logging.viz
+        seed = int(experiment.seed) + 1000 * int(fold)
+        sample_dir = sample_tp_fp_fn(
+            viz_dir,
+            n_tp=viz_cfg.sample_tp_per_fold,
+            n_fp=viz_cfg.sample_fp_per_fold,
+            n_fn=viz_cfg.sample_fn_per_fold,
+            seed=seed,
+        )
+        upload_artifact(
+            wandb_logger.experiment,
+            name=f"viz-fold{fold}-{experiment.short_uuid}",
+            artifact_type="viz",
+            paths=[sample_dir],
+            aliases=["latest"],
+        )
+    except Exception as e:  # noqa: BLE001
+        log.warning("post-training viz failed (%s)", e)
+
+
 def cmd_train(args: argparse.Namespace) -> int:
-    _setup_logging()
     experiment = load_experiment(args.experiment)
+    _apply_cli_logging_overrides(experiment, args)
     folds = _parse_folds(args.fold, args.folds)
     run_dir = _bootstrap_run_dir(Path(args.experiment), experiment, args.force_resync)
 
+    _setup_run_logging(experiment, run_dir, fold=None)
+    log.info("===== run start =====")
+    log.info(
+        "experiment=%s uuid=%s short=%s",
+        experiment.name,
+        experiment.uuid,
+        experiment.short_uuid,
+    )
     log.info("run_dir=%s folds=%s", run_dir, folds)
+    gpu = _gpu_summary()
+    log.info(
+        "cuda=%s device=%s name=%s total=%s GiB",
+        gpu.get("cuda"),
+        gpu.get("device_index"),
+        gpu.get("gpu_name"),
+        gpu.get("gpu_total_memory_gib"),
+    )
+    cfg = experiment.logging.wandb
+    log.info(
+        "wandb=%s project=%s mode=%s",
+        "ON" if is_wandb_enabled(experiment.logging) else "OFF",
+        cfg.project,
+        cfg.mode,
+    )
+
     for f in folds:
-        log.info("=== Training fold %d ===", f)
-        _train_one_fold(experiment, f, run_dir, args.wandb, args.resume)
+        log.info("----- fold %d -----", f)
+        _train_one_fold(experiment, f, run_dir, args.resume)
     return 0
 
 
@@ -374,9 +601,7 @@ def cmd_train(args: argparse.Namespace) -> int:
 
 
 def cmd_smoke(args: argparse.Namespace) -> int:
-    _setup_logging()
-    # Defer to scripts/smoke_train.run_smoke which performs the smoke pid
-    # subset selection, training, and assertions.
+    setup_logging(LoggingConfig().file)
     from scripts.smoke_train import run_smoke
 
     run_smoke(keep_artifacts=False)
@@ -390,46 +615,167 @@ def cmd_smoke(args: argparse.Namespace) -> int:
 
 
 def cmd_eval(args: argparse.Namespace) -> int:
-    _setup_logging()
     experiment = load_experiment(args.experiment)
+    _apply_cli_logging_overrides(experiment, args)
     run_dir = _bootstrap_run_dir(Path(args.experiment), experiment, args.force_resync)
-    try:
-        from endo.eval.run_eval import run_cv_evaluation
-    except Exception as e:  # noqa: BLE001
-        log.error("eval module not available: %s", e)
-        return 1
+    _setup_run_logging(experiment, run_dir, fold=None)
+
     eval_dir = run_dir / "eval"
-    res = run_cv_evaluation(experiment=experiment, use_gru=args.use_gru, eval_dir=eval_dir)
-    log.info("CV evaluation done: %s", res)
+    eval_dir.mkdir(parents=True, exist_ok=True)
+
+    wandb_run = build_wandb_run(
+        experiment, fold=None, stage="eval", save_dir=eval_dir
+    )
+    try:
+        try:
+            from endo.eval.run_eval import run_cv_evaluation
+        except Exception as e:  # noqa: BLE001
+            log.error("eval module not available: %s", e)
+            return 1
+
+        res = run_cv_evaluation(experiment=experiment, use_gru=args.use_gru, eval_dir=eval_dir)
+        log.info("CV evaluation done: %s", res)
+
+        if wandb_run is not None:
+            log_summary(
+                wandb_run,
+                {
+                    "run_id": res.get("run_id"),
+                    "ensemble_threshold_large": res.get("ensemble_threshold", {}).get("large"),
+                    "ensemble_threshold_small": res.get("ensemble_threshold", {}).get("small"),
+                    "n_rows": res.get("n_rows"),
+                    "use_gru": bool(args.use_gru),
+                },
+            )
+            if experiment.logging.wandb.upload_eval_reports:
+                upload_paths = []
+                for fname in (
+                    "eval_report.csv",
+                    "eval_thresholds.json",
+                ):
+                    p = eval_dir / fname
+                    if p.exists():
+                        upload_paths.append(p)
+                # also include any per-call jsonl from this run
+                if res.get("calls_path"):
+                    p = Path(res["calls_path"])
+                    if p.exists():
+                        upload_paths.append(p)
+                upload_artifact(
+                    wandb_run,
+                    name=f"eval-report-{experiment.short_uuid}",
+                    artifact_type="eval-report",
+                    paths=upload_paths,
+                    aliases=["latest"],
+                )
+    finally:
+        finish_run(wandb_run)
     return 0
 
 
 def cmd_predict_holdout(args: argparse.Namespace) -> int:
-    _setup_logging()
     experiment = load_experiment(args.experiment)
+    _apply_cli_logging_overrides(experiment, args)
     run_dir = _bootstrap_run_dir(Path(args.experiment), experiment, args.force_resync)
-    try:
-        from endo.eval.run_eval import run_holdout_inference
-    except Exception as e:  # noqa: BLE001
-        log.error("eval module not available: %s", e)
-        return 1
+    _setup_run_logging(experiment, run_dir, fold=None)
+
     if args.ckpts.strip().lower() == "all":
         ckpts: list[int] | str = [0, 1, 2, 3, 4]
     else:
         ckpts = [int(p.strip()) for p in args.ckpts.split(",") if p.strip()]
-    out = run_holdout_inference(
-        experiment=experiment,
-        ckpts=ckpts,
-        use_gru=args.use_gru,
+
+    holdout_dir = run_dir / "holdout"
+    holdout_dir.mkdir(parents=True, exist_ok=True)
+    wandb_run = build_wandb_run(
+        experiment, fold=None, stage="holdout", save_dir=holdout_dir
     )
-    log.info("holdout invocation dir: %s", out)
+    try:
+        try:
+            from endo.eval.run_eval import run_holdout_inference
+        except Exception as e:  # noqa: BLE001
+            log.error("eval module not available: %s", e)
+            return 1
+        out = run_holdout_inference(
+            experiment=experiment,
+            ckpts=ckpts,
+            use_gru=args.use_gru,
+        )
+        log.info("holdout invocation dir: %s", out)
+        if wandb_run is not None:
+            try:
+                _log_holdout_summary(wandb_run, out, experiment)
+            except Exception as e:  # noqa: BLE001
+                log.warning("holdout W&B summary failed (%s)", e)
+            if experiment.logging.wandb.upload_eval_reports:
+                upload_paths = []
+                for fname in (
+                    "eval_report.csv",
+                    "invocation.json",
+                ):
+                    p = out / fname
+                    if p.exists():
+                        upload_paths.append(p)
+                # any per_call jsonl
+                for p in out.glob("per_call_*.jsonl"):
+                    upload_paths.append(p)
+                if upload_paths:
+                    upload_artifact(
+                        wandb_run,
+                        name=f"holdout-report-{experiment.short_uuid}",
+                        artifact_type="holdout-report",
+                        paths=upload_paths,
+                        aliases=["latest"],
+                    )
+    finally:
+        finish_run(wandb_run)
     return 0
 
 
+def _log_holdout_summary(wandb_run, holdout_dir: Path, experiment: ExperimentConfig) -> None:
+    """Attach holdout score histogram + summary table to the W&B run."""
+    invocation_path = holdout_dir / "invocation.json"
+    summary: dict[str, Any] = {}
+    if invocation_path.exists():
+        try:
+            import json as _json
+
+            summary.update(_json.loads(invocation_path.read_text()))
+        except Exception:  # noqa: BLE001
+            pass
+    log_summary(wandb_run, summary)
+    # Histogram of per-patient scores (read from eval_report.csv if present).
+    csv_path = holdout_dir / "eval_report.csv"
+    if not csv_path.exists():
+        return
+    try:
+        import csv as _csv
+
+        scores: list[float] = []
+        with csv_path.open("r", newline="") as f:
+            reader = _csv.DictReader(f)
+            for row in reader:
+                try:
+                    scores.append(float(row.get("value", "nan")))
+                except Exception:  # noqa: BLE001
+                    continue
+        if scores:
+            try:
+                import wandb  # type: ignore[import]
+
+                wandb_run.log(
+                    {"holdout/eval_value_hist": wandb.Histogram(scores)}, commit=True
+                )
+            except Exception:  # noqa: BLE001
+                pass
+    except Exception:  # noqa: BLE001
+        pass
+
+
 def cmd_train_gru(args: argparse.Namespace) -> int:
-    _setup_logging()
     experiment = load_experiment(args.experiment)
-    _bootstrap_run_dir(Path(args.experiment), experiment, args.force_resync)
+    _apply_cli_logging_overrides(experiment, args)
+    run_dir = _bootstrap_run_dir(Path(args.experiment), experiment, args.force_resync)
+    _setup_run_logging(experiment, run_dir, fold=None)
     folds = _parse_folds(args.fold, args.folds)
     stage = args.stage
     try:
@@ -439,33 +785,81 @@ def cmd_train_gru(args: argparse.Namespace) -> int:
         log.error("gru module not available: %s", e)
         return 1
     for f in folds:
-        if stage in ("feature_cache", "all"):
-            log.info("[fold %d] extracting backbone features", f)
-            extract_features_for_fold(experiment, f)
-        if stage in ("train", "all"):
-            log.info("[fold %d] training GRU", f)
-            train_gru_for_fold(experiment, f)
+        gru_dir = run_dir / f"fold{f}" / "gru"
+        gru_dir.mkdir(parents=True, exist_ok=True)
+        wandb_run = build_wandb_run(
+            experiment, fold=f, stage="gru", save_dir=gru_dir
+        )
+        try:
+            if stage in ("feature_cache", "all"):
+                log.info("[fold %d] extracting backbone features", f)
+                extract_features_for_fold(experiment, f)
+            if stage in ("train", "all"):
+                log.info("[fold %d] training GRU", f)
+                ckpt_path = train_gru_for_fold(experiment, f)
+                if wandb_run is not None and Path(ckpt_path).exists():
+                    log_summary(
+                        wandb_run,
+                        {"gru_ckpt": str(ckpt_path), "fold": int(f)},
+                    )
+                    if experiment.logging.wandb.upload_checkpoints:
+                        upload_artifact(
+                            wandb_run,
+                            name=f"gru-fold{f}-{experiment.short_uuid}",
+                            artifact_type="model",
+                            paths=[Path(ckpt_path)],
+                            aliases=["best"],
+                        )
+        finally:
+            finish_run(wandb_run)
     return 0
 
 
 def cmd_viz(args: argparse.Namespace) -> int:
-    _setup_logging()
     experiment = load_experiment(args.experiment)
-    _bootstrap_run_dir(Path(args.experiment), experiment, args.force_resync)
+    _apply_cli_logging_overrides(experiment, args)
+    run_dir = _bootstrap_run_dir(Path(args.experiment), experiment, args.force_resync)
+    _setup_run_logging(experiment, run_dir, fold=None)
     folds = _parse_folds(args.fold, args.folds)
     try:
-        from endo.viz.run_viz import visualize_predictions_for_fold
+        from endo.viz.run_viz import sample_tp_fp_fn, visualize_predictions_for_fold
     except Exception as e:  # noqa: BLE001
         log.error("viz module not available: %s", e)
         return 1
     for f in folds:
         log.info("[fold %d] rendering visualizations", f)
-        visualize_predictions_for_fold(experiment=experiment, fold=f)
+        viz_dir = run_dir / f"fold{f}" / "viz" / "epoch_post-train"
+        out = visualize_predictions_for_fold(
+            experiment=experiment, fold=f, output_dir=viz_dir
+        )
+        wandb_run = build_wandb_run(
+            experiment, fold=f, stage="viz", save_dir=run_dir / f"fold{f}"
+        )
+        try:
+            if wandb_run is not None and experiment.logging.wandb.upload_viz_artifacts:
+                viz_cfg = experiment.logging.viz
+                seed = int(experiment.seed) + 1000 * int(f)
+                sample_dir = sample_tp_fp_fn(
+                    out,
+                    n_tp=viz_cfg.sample_tp_per_fold,
+                    n_fp=viz_cfg.sample_fp_per_fold,
+                    n_fn=viz_cfg.sample_fn_per_fold,
+                    seed=seed,
+                )
+                upload_artifact(
+                    wandb_run,
+                    name=f"viz-fold{f}-{experiment.short_uuid}",
+                    artifact_type="viz",
+                    paths=[sample_dir],
+                    aliases=["latest"],
+                )
+        finally:
+            finish_run(wandb_run)
     return 0
 
 
 def cmd_qc_paste(args: argparse.Namespace) -> int:
-    _setup_logging()
+    setup_logging(LoggingConfig().file)
     log.info("qc_paste is a dev workflow; rendering composites is delegated "
              "to scripts/qc_paste_review.py (advisory only).")
     return 0
@@ -483,6 +877,20 @@ def _add_common(p: argparse.ArgumentParser) -> None:
     p.add_argument("--folds", type=str, default=None, help='CSV of fold ids or "all"')
     p.add_argument("--force-resync", action="store_true",
                    help="overwrite experiment.yaml (drift override)")
+    grp = p.add_mutually_exclusive_group()
+    grp.add_argument("--wandb", dest="wandb", action="store_true", default=None,
+                     help="force-enable W&B logging (overrides experiment config)")
+    grp.add_argument("--no-wandb", dest="wandb", action="store_false", default=None,
+                     help="force-disable W&B logging")
+    p.add_argument(
+        "--wandb-mode",
+        type=str,
+        choices=("online", "offline", "disabled"),
+        default=None,
+        help="override LoggingConfig.wandb.mode",
+    )
+    p.add_argument("-v", "--verbose", action="count", default=0,
+                   help="-v=DEBUG console, -vv=DEBUG console+file")
 
 
 def build_argparser() -> argparse.ArgumentParser:
@@ -491,7 +899,6 @@ def build_argparser() -> argparse.ArgumentParser:
 
     p_train = sub.add_parser("train")
     _add_common(p_train)
-    p_train.add_argument("--wandb", action="store_true")
     p_train.add_argument("--resume", action="store_true")
     p_train.set_defaults(func=cmd_train)
 

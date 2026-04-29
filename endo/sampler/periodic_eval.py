@@ -295,11 +295,24 @@ class PeriodicDeepEvalCallback(pl.Callback):
                     {
                         "deep_eval/val_volume_auroc_coarse": float(coarse["volume_auroc"]),
                         "deep_eval/val_froc_at_2fp_coarse": float(coarse["sens_at_2fp"]),
+                        "deep_eval/hard_pool_size": float(len(slice_indices)),
+                        "deep_eval/val_secs": float(val_secs),
+                        "deep_eval/neg_secs": float(neg_secs),
+                        "deep_eval/n_val_patients_scored": float(len(val_scores)),
                     },
                     sync_dist=False,
                 )
             except Exception as e:  # pragma: no cover - log_dict shape varies in mocks
                 log.debug("log_dict skipped (%s)", e)
+
+            # Hard-pool score histogram (W&B only). Skip silently when wandb
+            # isn't wired up.
+            try:
+                if ranked:
+                    scores_for_hist = [float(s) for s, _ in ranked]
+                    self._maybe_log_score_histogram(trainer, scores_for_hist, epoch)
+            except Exception as e:  # noqa: BLE001
+                log.debug("hard-pool histogram skipped (%s)", e)
 
             log.info(
                 "deep_eval epoch=%d val_secs=%.2f neg_secs=%.2f hard_pool_size=%d",
@@ -312,6 +325,30 @@ class PeriodicDeepEvalCallback(pl.Callback):
             self._restore_live(did_swap)
 
     # ─── helpers ─────────────────────────────────────────────────────
+
+    @staticmethod
+    def _maybe_log_score_histogram(
+        trainer: pl.Trainer, scores: list[float], epoch: int
+    ) -> None:
+        """Log the hard-pool score distribution as a W&B histogram."""
+        loggers = getattr(trainer, "loggers", None) or [getattr(trainer, "logger", None)]
+        for lg in loggers:
+            if lg is None or lg is False:
+                continue
+            exp = getattr(lg, "experiment", None)
+            if exp is None:
+                continue
+            try:
+                import wandb  # type: ignore[import]
+            except Exception:
+                return
+            try:
+                exp.log(
+                    {"deep_eval/hard_pool_score_hist": wandb.Histogram(scores)},
+                    step=int(getattr(trainer, "global_step", 0) or 0),
+                )
+            except Exception:  # noqa: BLE001
+                continue
 
     @staticmethod
     def _slice_index_lookup(trainer: pl.Trainer) -> dict[tuple[str, int], int] | None:

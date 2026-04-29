@@ -23,3 +23,18 @@ clearly outline when something is a guess versus when something comes from hard 
 
 ### Miscellaneous
 - .env file contains WANDB_API_KEY and HF_TOKEN if needed to access wandb or huggingface
+
+### CLI flag contract — `endo.cli.run_experiment`
+
+Logging + W&B are controlled by `LoggingConfig` inside the experiment file.
+Three CLI flags can override that config without editing the file:
+
+- `--wandb` / `--no-wandb` (mutually exclusive) — overrides `experiment.logging.wandb.enabled` for this invocation only. Never modifies `experiments/<name>.py` or `runs/<exp>/experiment.yaml`.
+- `--wandb-mode {online,offline,disabled}` — overrides `experiment.logging.wandb.mode`.
+- `-v` / `-vv` — overrides `experiment.logging.file.level_console` (and, with `-vv`, `level_file`) to `DEBUG`.
+
+These flags propagate uniformly to all subcommands (`train`, `train_gru`, `eval`, `predict_holdout`, `viz`).
+
+The whole `LoggingConfig` subtree is **drift-exempt** in `ExperimentConfig.diff(...)` — toggling
+`logging.*` between resumes does NOT trip the drift guard. Per-fold file logs land at
+`runs/<exp>/fold{N}/run.log` (rotating, 50 MB × 3 backups by default); the top-level run log is at `runs/<exp>/run.log`.
