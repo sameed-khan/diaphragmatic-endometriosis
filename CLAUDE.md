@@ -20,3 +20,6 @@ folder unless otherwise instructed
 clearly outline when something is a guess versus when something comes from hard knowledge you can point to
 5. Always consider the overall goal of the project and push back on unnecessary or redundant steps if you believe they are inadvisable
 6. Frequently ask for clarification if needed; ensure you have a perfectly clear understanding of my intent before executing any task
+
+### Miscellaneous
+- .env file contains WANDB_API_KEY and HF_TOKEN if needed to access wandb or huggingface
