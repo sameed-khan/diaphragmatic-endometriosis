@@ -318,10 +318,16 @@ def _panel_reliability(ax, cv_curve: list[dict], ho_curve: list[dict]) -> None:
 # Top-level
 
 
-def render(run_dir: Path, holdout_dir: Path | None, out_path: Path) -> dict:
+def render(run_dir: Path, holdout_dir: Path | None, out_path: Path,
+           rescored: bool | None = None) -> dict:
     eval_dir = run_dir / "eval"
     cv_rows = _read_eval_report(eval_dir / "eval_report.csv")
     holdout_rows = _read_eval_report(holdout_dir / "eval_report.csv") if holdout_dir else []
+    # Optionally restrict to rescored=False (max-pool) or rescored=True (GRU)
+    # so that abstract numbers reflect a single methodology when both are present.
+    if rescored is not None:
+        cv_rows = _filter_rows(cv_rows, rescored=rescored)
+        holdout_rows = _filter_rows(holdout_rows, rescored=rescored)
 
     fold_scores: list[np.ndarray] = []
     fold_labels: list[np.ndarray] = []
@@ -395,12 +401,16 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--runs-root", type=Path, default=Path("runs"))
     p.add_argument("--out", type=Path, default=None,
                    help="output PDF path (defaults to runs/<exp>_*/eval/abstract_figure.pdf)")
+    p.add_argument("--rescored", choices=("auto", "true", "false"), default="auto",
+                   help="restrict to rescored=true (GRU) or rescored=false (max-pool) rows; "
+                        "auto = no filter (uses last matching row, may mix methods)")
     args = p.parse_args(argv)
 
     run_dir = _resolve_run_dir(args.runs_root, args.exp)
     holdout_dir = _latest_holdout(run_dir)
     out_path = args.out if args.out is not None else (run_dir / "eval" / "abstract_figure.pdf")
-    headline = render(run_dir, holdout_dir, out_path)
+    rescored = None if args.rescored == "auto" else (args.rescored == "true")
+    headline = render(run_dir, holdout_dir, out_path, rescored=rescored)
     print(f"Wrote {out_path}")
     print(f"Wrote {out_path.with_suffix('.png')}")
     print(f"Wrote {out_path.with_name('abstract_numbers.json')}")
