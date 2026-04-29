@@ -1,4 +1,3 @@
-GPU 0: NVIDIA A100-SXM4-40GB (UUID: GPU-34a6850e-f9db-7536-ed9a-4ab643e96e50)
   MIG 1g.10gb     Device  0: (UUID: MIG-21eaf8f8-7002-5395-8a3b-74c7737edca5)
   MIG 1g.10gb     Device  1: (UUID: MIG-1f8c14c3-c253-5f8b-84db-33fcfcfdd62d)
   MIG 1g.10gb     Device  2: (UUID: MIG-acc1f638-4ba8-57e9-8275-92f9142623ce)
