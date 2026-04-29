@@ -222,6 +222,23 @@ def compute_volume_metrics(
         "ap": {"value": ap, "ci_lower": ap_lo, "ci_upper": ap_hi},
     }
 
+    # Calibration (Brier + ECE) on raw fused max-scores, with patient-level CIs.
+    from endo.eval.calibration import (
+        brier_score as _brier_score,
+        expected_calibration_error as _ece,
+    )
+
+    brier_pt = _brier_score(score_label_pairs)
+    ece_pt = _ece(score_label_pairs)
+    brier_lo, brier_hi = bootstrap_ci(
+        score_label_pairs, _brier_score, n=cfg.bootstrap_n, seed=cfg.bootstrap_seed + 11
+    )
+    ece_lo, ece_hi = bootstrap_ci(
+        score_label_pairs, _ece, n=cfg.bootstrap_n, seed=cfg.bootstrap_seed + 13
+    )
+    out["brier"] = {"value": brier_pt, "ci_lower": brier_lo, "ci_upper": brier_hi}
+    out["ece"] = {"value": ece_pt, "ci_lower": ece_lo, "ci_upper": ece_hi}
+
     # Per-fp-point sensitivities + bootstrap (single pass over all FP points).
     fp_cis = _bootstrap_fp_curves(
         pids,

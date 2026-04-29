@@ -34,7 +34,7 @@ import subprocess
 import time
 import uuid
 from pathlib import Path
-from typing import Mapping
+from typing import Iterable, Mapping
 
 import numpy as np
 
@@ -54,6 +54,8 @@ from endo.eval.calls import (
     match_calls_to_gt,
     write_calls_jsonl,
 )
+from endo.eval.calibration import reliability_curve
+from endo.eval.lesion_strata import compute_lesion_volume_strata
 from endo.eval.metrics import compute_volume_metrics
 from endo.eval.report import EvalReportRow, append_eval_report, write_eval_thresholds_json
 from endo.eval.stratified import stratify_metrics
@@ -370,6 +372,97 @@ def _try_gru_rescore_fresh(
         return None
 
 
+def _emit_lesion_volume_strata_rows(
+    call_records: Iterable[dict],
+    *,
+    run_id: str,
+    entrypoint: str,
+    scope: str,
+    fold: int | None,
+    rescored: bool,
+    cfg: EvalConfig,
+    code_version: str,
+) -> list[EvalReportRow]:
+    """Compute lesion-volume-binned sensitivity rows from per-call records."""
+    strata = compute_lesion_volume_strata(
+        list(call_records),
+        bootstrap_n=int(cfg.bootstrap_n),
+        seed=int(cfg.bootstrap_seed) + 23,
+    )
+    rows: list[EvalReportRow] = []
+    for sr in strata:
+        for metric_name, payload in sr["metrics"].items():
+            rows.append(
+                EvalReportRow(
+                    run_id=run_id,
+                    entrypoint=entrypoint,
+                    metric=metric_name,
+                    scope=scope,
+                    fold=fold,
+                    stratum_kind=sr["stratum_kind"],
+                    stratum_value=sr["stratum_value"],
+                    rescored=rescored,
+                    value=float(payload.get("value", float("nan"))),
+                    ci_lower_95=float(payload.get("ci_lower", float("nan"))),
+                    ci_upper_95=float(payload.get("ci_upper", float("nan"))),
+                    n_patients=0,
+                    n_lesions=int(sr.get("n_lesions", 0)),
+                    code_version=code_version,
+                )
+            )
+    return rows
+
+
+def _save_raw_preds_json(
+    path: Path,
+    raw_preds: Mapping[str, dict],
+    labels: Mapping[str, int],
+    *,
+    run_id: str,
+    entrypoint: str,
+    fold: int | None,
+) -> None:
+    """Persist per-volume max scores + labels for downstream ROC/calibration plots."""
+    payload = {
+        "run_id": run_id,
+        "entrypoint": entrypoint,
+        "fold": fold,
+        "predictions": {
+            pid: {
+                "score": float(p.get("score", 0.0)),
+                "label": int(labels.get(pid, 0)),
+            }
+            for pid, p in raw_preds.items()
+        },
+    }
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, indent=2))
+
+
+def _save_reliability_json(
+    path: Path,
+    raw_preds: Mapping[str, dict],
+    labels: Mapping[str, int],
+    *,
+    run_id: str,
+    entrypoint: str,
+    fold: int | None,
+    n_bins: int = 10,
+) -> None:
+    """Persist a reliability curve (binned mean_pred vs frac_pos) for plotting."""
+    pairs = [(float(p.get("score", 0.0)), int(labels.get(pid, 0))) for pid, p in raw_preds.items()]
+    curve = reliability_curve(pairs, n_bins=n_bins)
+    payload = {
+        "run_id": run_id,
+        "entrypoint": entrypoint,
+        "fold": fold,
+        "n_bins": int(n_bins),
+        "curve": curve,
+    }
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, indent=2))
+
+
 def _emit_metric_rows(
     metrics: dict,
     *,
@@ -556,6 +649,16 @@ def run_cv_evaluation(
             )
         )
 
+        # Persist per-fold raw fused volume scores for downstream ROC/reliability plots.
+        _save_raw_preds_json(
+            eval_dir / f"raw_preds_fold{fold}.json",
+            raw_preds,
+            labels,
+            run_id=run_id,
+            entrypoint="cv",
+            fold=fold,
+        )
+
         # Per-call JSONL emission for this fold (raw fused detection map).
         if cfg.emit_call_jsonl:
             for pid in raw_preds.keys():
@@ -618,6 +721,38 @@ def run_cv_evaluation(
             rescored=use_gru,
             n_patients=len(pooled_thr_preds),
             n_lesions=int(sum(pooled_labels.values())),
+            code_version=code_version,
+        )
+    )
+
+    # Persist pooled raw preds + reliability curve for the figure.
+    _save_raw_preds_json(
+        eval_dir / "raw_preds_cv_pooled.json",
+        pooled_raw_preds,
+        pooled_labels,
+        run_id=run_id,
+        entrypoint="cv",
+        fold=None,
+    )
+    _save_reliability_json(
+        eval_dir / "reliability_cv_pooled.json",
+        pooled_raw_preds,
+        pooled_labels,
+        run_id=run_id,
+        entrypoint="cv",
+        fold=None,
+    )
+
+    # Lesion-volume-binned sensitivity (cv_pooled scope).
+    rows_to_write.extend(
+        _emit_lesion_volume_strata_rows(
+            all_call_records,
+            run_id=run_id,
+            entrypoint="cv",
+            scope="cv_pooled",
+            fold=None,
+            rescored=use_gru,
+            cfg=cfg,
             code_version=code_version,
         )
     )
@@ -932,8 +1067,8 @@ def run_holdout_inference(
 
     append_eval_report(csv_path, rows)
 
+    all_records: list[dict] = []
     if cfg.emit_call_jsonl:
-        all_records: list[dict] = []
         for pid in holdout_pids:
             p = raw_preds[pid]
             det_map = build_detection_map(
@@ -965,5 +1100,38 @@ def run_holdout_inference(
             )
         if all_records:
             write_calls_jsonl(calls_path, all_records)
+
+    # Persist holdout raw preds + reliability for the figure.
+    _save_raw_preds_json(
+        holdout_dir / "raw_preds_holdout.json",
+        raw_preds,
+        holdout_labels,
+        run_id=run_id,
+        entrypoint="holdout",
+        fold=None,
+    )
+    _save_reliability_json(
+        holdout_dir / "reliability_holdout.json",
+        raw_preds,
+        holdout_labels,
+        run_id=run_id,
+        entrypoint="holdout",
+        fold=None,
+    )
+
+    # Lesion-volume-binned sensitivity for holdout.
+    if all_records:
+        extra_rows = _emit_lesion_volume_strata_rows(
+            all_records,
+            run_id=run_id,
+            entrypoint="holdout",
+            scope="holdout",
+            fold=None,
+            rescored=use_gru,
+            cfg=cfg,
+            code_version=code_version,
+        )
+        if extra_rows:
+            append_eval_report(csv_path, extra_rows)
 
     return holdout_dir
