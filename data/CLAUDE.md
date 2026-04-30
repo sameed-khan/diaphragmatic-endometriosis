@@ -270,3 +270,36 @@ Anything in this directory that is *not* the four committed files (this
 `CLAUDE.md`, `README.md`, `splits.json`, `patient_id_mapping.csv`) is a
 deterministic function of the upstream source plus those four files. Don't
 treat it as ground truth — `scripts/` is the ground truth.
+
+---
+
+## 6. Syncing this folder from Hugging Face Hub (the easy way)
+
+Reproducing from upstream (§5) is the canonical regeneration path but is
+expensive (DICOM conversion + TotalSeg liver segmentation + dilation = several
+GPU-hours). For a working VM that just needs the artifacts, pull them from the
+private HF dataset repo instead:
+
+  **`sameedkhan/diaphragmatic-endometriosis-data`** (private)
+
+```bash
+# Auth (token in .env)
+export $(grep ^HF_TOKEN= .env | xargs)
+uv run hf auth login --token "$HF_TOKEN"
+
+# Pull data/ + cache/v1/ trees into the repo
+uv run hf download sameedkhan/diaphragmatic-endometriosis-data \
+  --repo-type dataset --local-dir .
+
+# Sanity check
+ls data/raw/cross-validation/positive | head -5
+```
+
+The HF repo mirrors the on-disk layout under `data/` and `cache/v1/`. It does
+NOT include the `_underscore` migration leftovers (`_archive/`, `_legacy/`,
+`_pipeline/`) — those are frozen artifacts of Phase-0 and not needed for
+training or eval.
+
+`hf download` is resumable and content-addressed, so re-running it is a no-op
+when files are already present locally. See top-level `CLAUDE.md` for the
+artifact-location matrix and per-subtree `--include` patterns.

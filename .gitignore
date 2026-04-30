@@ -65,3 +65,16 @@ history.txt
 agent/*.json
 agent/*.csv
 .agent-complete
+.agent-tmp/
+
+# --- Hugging Face Hub upload metadata (created by `hf upload-large-folder`) ---
+.cache/
+
+# --- defensive: any binary artifact that might land outside the standard dirs ---
+*.ckpt
+*.pt
+*.pkl
+*.npz
+*.safetensors
+*.h5
+.ipynb_checkpoints/
