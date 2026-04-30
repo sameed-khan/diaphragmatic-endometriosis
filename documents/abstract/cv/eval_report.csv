@@ -1,0 +1,339 @@
+run_id,entrypoint,metric,scope,fold,stratum_kind,stratum_value,rescored,value,ci_lower_95,ci_upper_95,n_patients,n_lesions,code_version
+cv_2026_04_29_202107_cc8b313,cv,volume_auroc,per_fold,0,,,false,0.943089430894309,0.8553237244264795,0.9921649235606598,100,18,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,ap,per_fold,0,,,false,0.8628842993426327,0.7159694646974848,0.9647919157781691,100,18,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,brier,per_fold,0,,,false,0.11150398959493031,0.08028593179023626,0.14391524950711188,100,18,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,ece,per_fold,0,,,false,0.15086588539183138,0.10420076467841863,0.20415999344177543,100,18,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_0.125fp,per_fold,0,,,false,0.8888888888888888,0.7333333333333333,1.0,100,18,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_0.25fp,per_fold,0,,,false,0.9444444444444444,0.8180397727272728,1.0,100,18,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_0.5fp,per_fold,0,,,false,1.0,0.863474025974026,1.0,100,18,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_1.0fp,per_fold,0,,,false,1.0,1.0,1.0,100,18,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_2.0fp,per_fold,0,,,false,1.0,1.0,1.0,100,18,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_4.0fp,per_fold,0,,,false,1.0,1.0,1.0,100,18,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_8.0fp,per_fold,0,,,false,1.0,1.0,1.0,100,18,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,volume_auroc,per_fold,1,,,false,0.8048696844993142,0.700780668234372,0.8967852620630399,99,18,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,ap,per_fold,1,,,false,0.5746951946300074,0.377283409963959,0.7661016342741033,99,18,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,brier,per_fold,1,,,false,0.12725458093003608,0.09871087396385694,0.1598615623426061,99,18,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,ece,per_fold,1,,,false,0.10556492660984848,0.07548228015728069,0.17924344354882987,99,18,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_0.125fp,per_fold,1,,,false,0.5,0.25,0.7857142857142857,99,18,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_0.25fp,per_fold,1,,,false,0.7222222222222222,0.47058823529411764,0.9444444444444444,99,18,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_0.5fp,per_fold,1,,,false,0.9444444444444444,0.7857142857142857,1.0,99,18,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_1.0fp,per_fold,1,,,false,1.0,1.0,1.0,99,18,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_2.0fp,per_fold,1,,,false,1.0,1.0,1.0,99,18,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_4.0fp,per_fold,1,,,false,1.0,1.0,1.0,99,18,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_8.0fp,per_fold,1,,,false,1.0,1.0,1.0,99,18,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,volume_auroc,per_fold,2,,,false,0.8845867460908414,0.7843928404745703,0.9668635566629752,96,17,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,ap,per_fold,2,,,false,0.7302052579916357,0.5118563161192788,0.8899045996780729,96,17,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,brier,per_fold,2,,,false,0.10839770175516605,0.08212864377225439,0.1399227604114761,96,17,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,ece,per_fold,2,,,false,0.14887237548828125,0.09827836354573569,0.20493170420328774,96,17,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_0.125fp,per_fold,2,,,false,0.7058823529411765,0.4782091097308489,0.9411764705882353,96,17,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_0.25fp,per_fold,2,,,false,0.8823529411764706,0.6,1.0,96,17,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_0.5fp,per_fold,2,,,false,0.9411764705882353,0.8,1.0,96,17,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_1.0fp,per_fold,2,,,false,1.0,1.0,1.0,96,17,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_2.0fp,per_fold,2,,,false,1.0,1.0,1.0,96,17,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_4.0fp,per_fold,2,,,false,1.0,1.0,1.0,96,17,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_8.0fp,per_fold,2,,,false,1.0,1.0,1.0,96,17,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,volume_auroc,per_fold,3,,,false,0.9530900967982129,0.8962953060011883,0.9914616085668716,96,17,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,ap,per_fold,3,,,false,0.865795985919825,0.720844000743068,0.9645041627762214,96,17,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,brier,per_fold,3,,,false,0.0819049386519442,0.055780396216944486,0.11051194917558817,96,17,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,ece,per_fold,3,,,false,0.13546964852139354,0.10262770112603906,0.18449385950807481,96,17,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_0.125fp,per_fold,3,,,false,0.9411764705882353,0.7142857142857143,1.0,96,17,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_0.25fp,per_fold,3,,,false,0.9411764705882353,0.8125,1.0,96,17,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_0.5fp,per_fold,3,,,false,1.0,1.0,1.0,96,17,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_1.0fp,per_fold,3,,,false,1.0,1.0,1.0,96,17,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_2.0fp,per_fold,3,,,false,1.0,1.0,1.0,96,17,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_4.0fp,per_fold,3,,,false,1.0,1.0,1.0,96,17,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_8.0fp,per_fold,3,,,false,1.0,1.0,1.0,96,17,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,volume_auroc,per_fold,4,,,false,0.9628164556962026,0.9133012465373962,0.9980030956848029,95,16,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,ap,per_fold,4,,,false,0.852178851968535,0.6509093048647571,0.9888919413919414,95,16,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,brier,per_fold,4,,,false,0.0892876633708447,0.06281130474995819,0.12026630384092651,95,16,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,ece,per_fold,4,,,false,0.15002569909158506,0.11009992645955398,0.20085545598088128,95,16,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_0.125fp,per_fold,4,,,false,0.9375,0.7857142857142857,1.0,95,16,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_0.25fp,per_fold,4,,,false,0.9375,0.7997368421052632,1.0,95,16,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_0.5fp,per_fold,4,,,false,1.0,1.0,1.0,95,16,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_1.0fp,per_fold,4,,,false,1.0,1.0,1.0,95,16,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_2.0fp,per_fold,4,,,false,1.0,1.0,1.0,95,16,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_4.0fp,per_fold,4,,,false,1.0,1.0,1.0,95,16,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_8.0fp,per_fold,4,,,false,1.0,1.0,1.0,95,16,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,volume_auroc,cv_pooled,,,,false,0.9120348837209302,0.8802920697020277,0.9400258447741717,486,86,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,ap,cv_pooled,,,,false,0.7333467115314393,0.6459957135021439,0.8111596738954421,486,86,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,brier,cv_pooled,,,,false,0.10390943203884657,0.09135551971195457,0.11691389203194792,486,86,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,ece,cv_pooled,,,,false,0.11965176303690844,0.09633951912683897,0.14892039773410853,486,86,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_0.125fp,cv_pooled,,,,false,0.813953488372093,0.719034043266812,0.9026788570210044,486,86,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_0.25fp,cv_pooled,,,,false,0.9418604651162791,0.8723267866884888,0.9879518072289156,486,86,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_0.5fp,cv_pooled,,,,false,1.0,0.9726027397260274,1.0,486,86,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_1.0fp,cv_pooled,,,,false,1.0,1.0,1.0,486,86,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_2.0fp,cv_pooled,,,,false,1.0,1.0,1.0,486,86,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_4.0fp,cv_pooled,,,,false,1.0,1.0,1.0,486,86,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_8.0fp,cv_pooled,,,,false,1.0,1.0,1.0,486,86,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,lesion_sensitivity,cv_pooled,,lesion_volume_bin,<=200mm3,false,0.21739130434782608,0.10869565217391304,0.34782608695652173,0,46,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,lesion_sensitivity,cv_pooled,,lesion_volume_bin,200-1000mm3,false,0.7222222222222222,0.6111111111111112,0.8194444444444444,0,72,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,lesion_sensitivity,cv_pooled,,lesion_volume_bin,1000-5000mm3,false,0.8333333333333334,0.6666666666666666,1.0,0,18,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,lesion_sensitivity,cv_pooled,,lesion_volume_bin,>5000mm3,false,1.0,1.0,1.0,0,17,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,volume_auroc,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF.'}",false,0.8872491145218417,0.8038084452661919,0.955405729803878,99,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,ap,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF.'}",false,0.761578075356151,0.5857633838870652,0.8877709891246859,99,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,brier,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF.'}",false,0.11709297764815095,0.08475895847428008,0.1507199964614396,99,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,ece,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF.'}",false,0.09570887910597253,0.07272606024687943,0.16821562370492354,99,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_0.125fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF.'}",false,0.7727272727272727,0.5217391304347826,0.9523809523809523,99,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_0.25fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF.'}",false,0.9090909090909091,0.7220238095238095,1.0,99,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_0.5fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF.'}",false,1.0,0.8888888888888888,1.0,99,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_1.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF.'}",false,1.0,1.0,1.0,99,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_2.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF.'}",false,1.0,1.0,1.0,99,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_4.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF.'}",false,1.0,1.0,1.0,99,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_8.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF.'}",false,1.0,1.0,1.0,99,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,volume_auroc,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF.'}",false,0.9245045484080572,0.8868937866568916,0.9559088581731287,282,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,ap,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF.'}",false,0.7654761749534518,0.6539361198979586,0.8576915369358266,282,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,brier,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF.'}",false,0.10946565235149427,0.09272922678297328,0.12785310721657608,282,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,ece,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF.'}",false,0.1360378400653812,0.10847460156412307,0.17001992801653473,282,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_0.125fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF.'}",false,0.8703703703703703,0.7254779411764706,0.9622816212438854,282,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_0.25fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF.'}",false,0.9629629629629629,0.8867924528301887,1.0,282,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_0.5fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF.'}",false,1.0,0.9534606866002215,1.0,282,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_1.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF.'}",false,1.0,1.0,1.0,282,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_2.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF.'}",false,1.0,1.0,1.0,282,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_4.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF.'}",false,1.0,1.0,1.0,282,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_8.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF.'}",false,1.0,1.0,1.0,282,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,volume_auroc,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'B', 'series_description': 'WATER: COR DIAFRAGMA T1 LAVA AB'}",false,0.9135802469135802,0.8360753574185361,0.9811101549053356,90,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,ap,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'B', 'series_description': 'WATER: COR DIAFRAGMA T1 LAVA AB'}",false,0.6108366578954814,0.29542728004684526,0.8764069264069264,90,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,brier,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'B', 'series_description': 'WATER: COR DIAFRAGMA T1 LAVA AB'}",false,0.07793893172631304,0.05389619166652362,0.10662566127107702,90,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,ece,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'B', 'series_description': 'WATER: COR DIAFRAGMA T1 LAVA AB'}",false,0.13015046301815245,0.10598447441226906,0.18131449381510417,90,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_0.125fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'B', 'series_description': 'WATER: COR DIAFRAGMA T1 LAVA AB'}",false,0.6666666666666666,0.25,1.0,90,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_0.25fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'B', 'series_description': 'WATER: COR DIAFRAGMA T1 LAVA AB'}",false,1.0,0.7142857142857143,1.0,90,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_0.5fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'B', 'series_description': 'WATER: COR DIAFRAGMA T1 LAVA AB'}",false,1.0,1.0,1.0,90,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_1.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'B', 'series_description': 'WATER: COR DIAFRAGMA T1 LAVA AB'}",false,1.0,1.0,1.0,90,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_2.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'B', 'series_description': 'WATER: COR DIAFRAGMA T1 LAVA AB'}",false,1.0,1.0,1.0,90,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_4.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'B', 'series_description': 'WATER: COR DIAFRAGMA T1 LAVA AB'}",false,1.0,1.0,1.0,90,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_8.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'B', 'series_description': 'WATER: COR DIAFRAGMA T1 LAVA AB'}",false,1.0,1.0,1.0,90,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,volume_auroc,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA FLEX NAV DIAFRAG'}",false,0.6363636363636364,0.32250000000000006,0.9090909090909091,12,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,ap,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA FLEX NAV DIAFRAG'}",false,0.2,0.125,0.75,12,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,brier,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA FLEX NAV DIAFRAG'}",false,0.07952658832073212,0.019927544395128886,0.18873227884372076,12,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,ece,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA FLEX NAV DIAFRAG'}",false,0.07391357421875,0.055132548014322914,0.2483342488606771,12,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_0.125fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA FLEX NAV DIAFRAG'}",false,0.0,0.0,1.0,12,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_0.25fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA FLEX NAV DIAFRAG'}",false,0.0,0.0,1.0,12,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_0.5fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA FLEX NAV DIAFRAG'}",false,1.0,0.0,1.0,12,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_1.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA FLEX NAV DIAFRAG'}",false,1.0,1.0,1.0,12,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_2.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA FLEX NAV DIAFRAG'}",false,1.0,1.0,1.0,12,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_4.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA FLEX NAV DIAFRAG'}",false,1.0,1.0,1.0,12,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_8.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA FLEX NAV DIAFRAG'}",false,1.0,1.0,1.0,12,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,volume_auroc,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF. NAVIGATOR'}",false,nan,nan,nan,1,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,ap,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF. NAVIGATOR'}",false,nan,nan,nan,1,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,brier,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF. NAVIGATOR'}",false,0.023507118225097656,0.023507118225097656,0.023507118225097656,1,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,ece,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF. NAVIGATOR'}",false,0.1533203125,0.1533203125,0.1533203125,1,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_0.125fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF. NAVIGATOR'}",false,0.0,nan,nan,1,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_0.25fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF. NAVIGATOR'}",false,0.0,nan,nan,1,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_0.5fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF. NAVIGATOR'}",false,0.0,nan,nan,1,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_1.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF. NAVIGATOR'}",false,nan,nan,nan,1,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_2.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF. NAVIGATOR'}",false,nan,nan,nan,1,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_4.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF. NAVIGATOR'}",false,nan,nan,nan,1,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_8.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF. NAVIGATOR'}",false,nan,nan,nan,1,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,volume_auroc,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'B', 'series_description': 'WATER: COR DIAFRAGMA T1 LAVA PRE abd'}",false,nan,nan,nan,1,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,ap,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'B', 'series_description': 'WATER: COR DIAFRAGMA T1 LAVA PRE abd'}",false,nan,nan,nan,1,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,brier,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'B', 'series_description': 'WATER: COR DIAFRAGMA T1 LAVA PRE abd'}",false,0.013847589492797852,0.013847589492797852,0.013847589492797852,1,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,ece,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'B', 'series_description': 'WATER: COR DIAFRAGMA T1 LAVA PRE abd'}",false,0.11767578125,0.11767578125,0.11767578125,1,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_0.125fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'B', 'series_description': 'WATER: COR DIAFRAGMA T1 LAVA PRE abd'}",false,0.0,nan,nan,1,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_0.25fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'B', 'series_description': 'WATER: COR DIAFRAGMA T1 LAVA PRE abd'}",false,0.0,nan,nan,1,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_0.5fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'B', 'series_description': 'WATER: COR DIAFRAGMA T1 LAVA PRE abd'}",false,0.0,nan,nan,1,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_1.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'B', 'series_description': 'WATER: COR DIAFRAGMA T1 LAVA PRE abd'}",false,nan,nan,nan,1,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_2.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'B', 'series_description': 'WATER: COR DIAFRAGMA T1 LAVA PRE abd'}",false,nan,nan,nan,1,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_4.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'B', 'series_description': 'WATER: COR DIAFRAGMA T1 LAVA PRE abd'}",false,nan,nan,nan,1,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_8.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'B', 'series_description': 'WATER: COR DIAFRAGMA T1 LAVA PRE abd'}",false,nan,nan,nan,1,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,volume_auroc,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR DIAFR LAVA EXP'}",false,nan,nan,nan,1,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,ap,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR DIAFR LAVA EXP'}",false,nan,nan,nan,1,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,brier,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR DIAFR LAVA EXP'}",false,0.03228759765625,0.03228759765625,0.03228759765625,1,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,ece,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR DIAFR LAVA EXP'}",false,0.1796875,0.1796875,0.1796875,1,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_0.125fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR DIAFR LAVA EXP'}",false,0.0,nan,nan,1,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_0.25fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR DIAFR LAVA EXP'}",false,0.0,nan,nan,1,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_0.5fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR DIAFR LAVA EXP'}",false,0.0,nan,nan,1,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_1.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR DIAFR LAVA EXP'}",false,nan,nan,nan,1,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_2.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR DIAFR LAVA EXP'}",false,nan,nan,nan,1,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_4.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR DIAFR LAVA EXP'}",false,nan,nan,nan,1,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_8.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR DIAFR LAVA EXP'}",false,nan,nan,nan,1,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,volume_auroc,cv_pooled,,variant,unknown,false,0.9120348837209302,0.8802920697020277,0.9400258447741717,486,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,ap,cv_pooled,,variant,unknown,false,0.7333467115314393,0.6459957135021439,0.8111596738954421,486,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,brier,cv_pooled,,variant,unknown,false,0.10390943203884657,0.09135551971195457,0.11691389203194792,486,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,ece,cv_pooled,,variant,unknown,false,0.11965176303690844,0.09633951912683897,0.14892039773410853,486,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_0.125fp,cv_pooled,,variant,unknown,false,0.813953488372093,0.719034043266812,0.9026788570210044,486,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_0.25fp,cv_pooled,,variant,unknown,false,0.9418604651162791,0.8723267866884888,0.9879518072289156,486,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_0.5fp,cv_pooled,,variant,unknown,false,1.0,0.9726027397260274,1.0,486,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_1.0fp,cv_pooled,,variant,unknown,false,1.0,1.0,1.0,486,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_2.0fp,cv_pooled,,variant,unknown,false,1.0,1.0,1.0,486,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_4.0fp,cv_pooled,,variant,unknown,false,1.0,1.0,1.0,486,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_8.0fp,cv_pooled,,variant,unknown,false,1.0,1.0,1.0,486,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,volume_auroc,cv_pooled,,slice_thickness_bin,unknown,false,0.9120348837209302,0.8802920697020277,0.9400258447741717,486,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,ap,cv_pooled,,slice_thickness_bin,unknown,false,0.7333467115314393,0.6459957135021439,0.8111596738954421,486,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,brier,cv_pooled,,slice_thickness_bin,unknown,false,0.10390943203884657,0.09135551971195457,0.11691389203194792,486,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,ece,cv_pooled,,slice_thickness_bin,unknown,false,0.11965176303690844,0.09633951912683897,0.14892039773410853,486,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_0.125fp,cv_pooled,,slice_thickness_bin,unknown,false,0.813953488372093,0.719034043266812,0.9026788570210044,486,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_0.25fp,cv_pooled,,slice_thickness_bin,unknown,false,0.9418604651162791,0.8723267866884888,0.9879518072289156,486,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_0.5fp,cv_pooled,,slice_thickness_bin,unknown,false,1.0,0.9726027397260274,1.0,486,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_1.0fp,cv_pooled,,slice_thickness_bin,unknown,false,1.0,1.0,1.0,486,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_2.0fp,cv_pooled,,slice_thickness_bin,unknown,false,1.0,1.0,1.0,486,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_4.0fp,cv_pooled,,slice_thickness_bin,unknown,false,1.0,1.0,1.0,486,0,cc8b313
+cv_2026_04_29_202107_cc8b313,cv,sens_at_8.0fp,cv_pooled,,slice_thickness_bin,unknown,false,1.0,1.0,1.0,486,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,volume_auroc,per_fold,0,,,true,0.9173441734417345,0.843109375,0.9727251461988304,100,18,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,ap,per_fold,0,,,true,0.7907386578129333,0.594545028906909,0.9219020222079498,100,18,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,brier,per_fold,0,,,true,0.1705268245618924,0.1039293732000405,0.23774796107857535,100,18,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,ece,per_fold,0,,,true,0.16209273998625576,0.09271153689362109,0.23171810113056562,100,18,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_0.125fp,per_fold,0,,,true,0.4444444444444444,0.21052631578947367,0.6666666666666666,100,18,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_0.25fp,per_fold,0,,,true,0.4444444444444444,0.266578947368421,0.7647058823529411,100,18,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_0.5fp,per_fold,0,,,true,0.7777777777777778,0.47360681114551084,0.9333333333333333,100,18,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_1.0fp,per_fold,0,,,true,1.0,1.0,1.0,100,18,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_2.0fp,per_fold,0,,,true,1.0,1.0,1.0,100,18,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_4.0fp,per_fold,0,,,true,1.0,1.0,1.0,100,18,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_8.0fp,per_fold,0,,,true,1.0,1.0,1.0,100,18,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,volume_auroc,per_fold,1,,,true,0.7750342935528121,0.6633651633282099,0.8799900577514956,99,18,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,ap,per_fold,1,,,true,0.511819384842955,0.31646043015957465,0.7197382966102127,99,18,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,brier,per_fold,1,,,true,0.1699840185061898,0.10362912216078754,0.2461162892816752,99,18,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,ece,per_fold,1,,,true,0.15700046882277938,0.08676865605985501,0.23553571128027723,99,18,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_0.125fp,per_fold,1,,,true,0.2777777777777778,0.08686594202898551,0.5296380090497735,99,18,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_0.25fp,per_fold,1,,,true,0.6666666666666666,0.18181818181818182,0.6666666666666666,99,18,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_0.5fp,per_fold,1,,,true,0.7222222222222222,0.4117647058823529,0.8948684210526314,99,18,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_1.0fp,per_fold,1,,,true,1.0,1.0,1.0,99,18,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_2.0fp,per_fold,1,,,true,1.0,1.0,1.0,99,18,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_4.0fp,per_fold,1,,,true,1.0,1.0,1.0,99,18,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_8.0fp,per_fold,1,,,true,1.0,1.0,1.0,99,18,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,volume_auroc,per_fold,2,,,true,0.8860759493670887,0.7892235937437176,0.9658122579175211,96,17,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,ap,per_fold,2,,,true,0.7253807862612398,0.4975030637254902,0.8913208734832713,96,17,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,brier,per_fold,2,,,true,0.15797241809561796,0.09354143546858602,0.22901829265322438,96,17,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,ece,per_fold,2,,,true,0.141512147509881,0.07033633550042093,0.21359893690435758,96,17,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_0.125fp,per_fold,2,,,true,0.35294117647058826,0.15384615384615385,0.6470588235294118,96,17,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_0.25fp,per_fold,2,,,true,0.5882352941176471,0.26666666666666666,0.789736842105263,96,17,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_0.5fp,per_fold,2,,,true,0.8235294117647058,0.5,0.9411764705882353,96,17,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_1.0fp,per_fold,2,,,true,1.0,1.0,1.0,96,17,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_2.0fp,per_fold,2,,,true,1.0,1.0,1.0,96,17,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_4.0fp,per_fold,2,,,true,1.0,1.0,1.0,96,17,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_8.0fp,per_fold,2,,,true,1.0,1.0,1.0,96,17,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,volume_auroc,per_fold,3,,,true,0.939687267311988,0.8814787354546392,0.9843215970519493,96,17,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,ap,per_fold,3,,,true,0.810188229865143,0.6289636249802028,0.9366412488440351,96,17,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,brier,per_fold,3,,,true,0.16415453759624543,0.08774387277076122,0.24270781586263965,96,17,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,ece,per_fold,3,,,true,0.15809094538659946,0.08611202424641913,0.23934476725735296,96,17,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_0.125fp,per_fold,3,,,true,0.47058823529411764,0.25,0.760047619047619,96,17,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_0.25fp,per_fold,3,,,true,0.5294117647058824,0.35714285714285715,0.85,96,17,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_0.5fp,per_fold,3,,,true,0.7058823529411765,0.5452797202797203,0.9593749999999991,96,17,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_1.0fp,per_fold,3,,,true,1.0,1.0,1.0,96,17,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_2.0fp,per_fold,3,,,true,1.0,1.0,1.0,96,17,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_4.0fp,per_fold,3,,,true,1.0,1.0,1.0,96,17,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_8.0fp,per_fold,3,,,true,1.0,1.0,1.0,96,17,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,volume_auroc,per_fold,4,,,true,0.9612341772151898,0.9094110666418466,0.9971279193892735,95,16,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,ap,per_fold,4,,,true,0.8595227131726902,0.6639504752028699,0.9754330280357757,95,16,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,brier,per_fold,4,,,true,0.159719009275597,0.09027377382633035,0.23005061264701387,95,16,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,ece,per_fold,4,,,true,0.15501235197053143,0.08262758911513773,0.22771809261561812,95,16,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_0.125fp,per_fold,4,,,true,0.375,0.13312500000000002,0.6252840909090907,95,16,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_0.25fp,per_fold,4,,,true,0.5625,0.25,0.75,95,16,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_0.5fp,per_fold,4,,,true,0.75,0.4613636363636364,0.9334374999999999,95,16,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_1.0fp,per_fold,4,,,true,1.0,1.0,1.0,95,16,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_2.0fp,per_fold,4,,,true,1.0,1.0,1.0,95,16,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_4.0fp,per_fold,4,,,true,1.0,1.0,1.0,95,16,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_8.0fp,per_fold,4,,,true,1.0,1.0,1.0,95,16,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,volume_auroc,cv_pooled,,,,true,0.8473255813953489,0.8062771061380931,0.8860318301418734,486,86,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,ap,cv_pooled,,,,true,0.5501358483328969,0.441152756158081,0.6543594429811409,486,86,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,brier,cv_pooled,,,,true,0.16456500805741284,0.13128414149020678,0.19740198791251265,486,86,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,ece,cv_pooled,,,,true,0.1548156188628464,0.12055211123316202,0.18996982346985913,486,86,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_0.125fp,cv_pooled,,,,true,0.38372093023255816,0.2894657577679138,0.5057471264367817,486,86,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_0.25fp,cv_pooled,,,,true,0.5,0.4166432584269663,0.6250801282051281,486,86,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_0.5fp,cv_pooled,,,,true,0.7441860465116279,0.6219087681383143,0.82927522172949,486,86,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_1.0fp,cv_pooled,,,,true,1.0,1.0,1.0,486,86,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_2.0fp,cv_pooled,,,,true,1.0,1.0,1.0,486,86,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_4.0fp,cv_pooled,,,,true,1.0,1.0,1.0,486,86,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_8.0fp,cv_pooled,,,,true,1.0,1.0,1.0,486,86,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,lesion_sensitivity,cv_pooled,,lesion_volume_bin,<=200mm3,true,0.21739130434782608,0.10869565217391304,0.34782608695652173,0,46,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,lesion_sensitivity,cv_pooled,,lesion_volume_bin,200-1000mm3,true,0.7222222222222222,0.6111111111111112,0.8194444444444444,0,72,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,lesion_sensitivity,cv_pooled,,lesion_volume_bin,1000-5000mm3,true,0.8333333333333334,0.6666666666666666,1.0,0,18,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,lesion_sensitivity,cv_pooled,,lesion_volume_bin,>5000mm3,true,1.0,1.0,1.0,0,17,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,volume_auroc,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF.'}",true,0.8293978748524203,0.7284612070214062,0.9076272855133614,99,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,ap,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF.'}",true,0.5520938748993471,0.37618452478950926,0.7648555437943619,99,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,brier,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF.'}",true,0.20687604392870254,0.1311747407989821,0.28332876207500235,99,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,ece,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF.'}",true,0.19910228517226347,0.12028666298314364,0.28848251283340476,99,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_0.125fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF.'}",true,0.5454545454545454,0.3333333333333333,0.7619047619047619,99,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_0.25fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF.'}",true,0.6363636363636364,0.4,0.8421052631578947,99,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_0.5fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF.'}",true,0.7727272727272727,0.6,0.961574074074074,99,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_1.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF.'}",true,1.0,1.0,1.0,99,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_2.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF.'}",true,1.0,1.0,1.0,99,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_4.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF.'}",true,1.0,1.0,1.0,99,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_8.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF.'}",true,1.0,1.0,1.0,99,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,volume_auroc,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF.'}",true,0.8598115659519168,0.8121290767787636,0.901905791151125,282,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,ap,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF.'}",true,0.6144211854693498,0.49411952605842835,0.7313583913401902,282,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,brier,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF.'}",true,0.17780400193660278,0.1382851220490951,0.2237016473489244,282,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,ece,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF.'}",true,0.16876458477539322,0.12397890815070452,0.21431138468865,282,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_0.125fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF.'}",true,0.2962962962962963,0.1799871794871795,0.42857142857142855,282,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_0.25fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF.'}",true,0.46296296296296297,0.2999561403508772,0.584917165209388,282,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_0.5fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF.'}",true,0.7962962962962963,0.5454146730462519,0.8214810924369748,282,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_1.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF.'}",true,1.0,1.0,1.0,282,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_2.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF.'}",true,1.0,1.0,1.0,282,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_4.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF.'}",true,1.0,1.0,1.0,282,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_8.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF.'}",true,1.0,1.0,1.0,282,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,volume_auroc,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'B', 'series_description': 'WATER: COR DIAFRAGMA T1 LAVA AB'}",true,0.8353909465020577,0.7199411764705882,0.9380808950086058,90,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,ap,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'B', 'series_description': 'WATER: COR DIAFRAGMA T1 LAVA AB'}",true,0.43846122191710424,0.14266775014739336,0.7083391318122106,90,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,brier,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'B', 'series_description': 'WATER: COR DIAFRAGMA T1 LAVA AB'}",true,0.09318999017322857,0.04124388596906262,0.1572457635772461,90,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,ece,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'B', 'series_description': 'WATER: COR DIAFRAGMA T1 LAVA AB'}",true,0.0791840159541203,0.023475686835590752,0.14430841202058622,90,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_0.125fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'B', 'series_description': 'WATER: COR DIAFRAGMA T1 LAVA AB'}",true,0.6666666666666666,0.2848214285714286,1.0,90,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_0.25fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'B', 'series_description': 'WATER: COR DIAFRAGMA T1 LAVA AB'}",true,0.6666666666666666,0.375,1.0,90,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_0.5fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'B', 'series_description': 'WATER: COR DIAFRAGMA T1 LAVA AB'}",true,0.7777777777777778,0.5,1.0,90,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_1.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'B', 'series_description': 'WATER: COR DIAFRAGMA T1 LAVA AB'}",true,1.0,1.0,1.0,90,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_2.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'B', 'series_description': 'WATER: COR DIAFRAGMA T1 LAVA AB'}",true,1.0,1.0,1.0,90,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_4.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'B', 'series_description': 'WATER: COR DIAFRAGMA T1 LAVA AB'}",true,1.0,1.0,1.0,90,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_8.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'B', 'series_description': 'WATER: COR DIAFRAGMA T1 LAVA AB'}",true,1.0,1.0,1.0,90,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,volume_auroc,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA FLEX NAV DIAFRAG'}",true,0.7272727272727273,0.4545454545454546,1.0,12,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,ap,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA FLEX NAV DIAFRAG'}",true,0.25,0.16666666666666666,1.0,12,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,brier,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA FLEX NAV DIAFRAG'}",true,0.08080395914703788,0.00013189338400136085,0.2420668320422144,12,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,ece,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA FLEX NAV DIAFRAG'}",true,0.07035564670028785,0.010713730220838139,0.23781061272990578,12,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_0.125fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA FLEX NAV DIAFRAG'}",true,0.0,0.0,1.0,12,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_0.25fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA FLEX NAV DIAFRAG'}",true,0.0,0.0,1.0,12,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_0.5fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA FLEX NAV DIAFRAG'}",true,1.0,0.0,1.0,12,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_1.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA FLEX NAV DIAFRAG'}",true,1.0,1.0,1.0,12,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_2.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA FLEX NAV DIAFRAG'}",true,1.0,1.0,1.0,12,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_4.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA FLEX NAV DIAFRAG'}",true,1.0,1.0,1.0,12,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_8.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA FLEX NAV DIAFRAG'}",true,1.0,1.0,1.0,12,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,volume_auroc,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF. NAVIGATOR'}",true,nan,nan,nan,1,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,ap,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF. NAVIGATOR'}",true,nan,nan,nan,1,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,brier,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF. NAVIGATOR'}",true,0.00019914758141315048,0.00019914758141315048,0.00019914758141315048,1,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,ece,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF. NAVIGATOR'}",true,0.014111965894699097,0.014111965894699097,0.014111965894699097,1,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_0.125fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF. NAVIGATOR'}",true,0.0,nan,nan,1,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_0.25fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF. NAVIGATOR'}",true,0.0,nan,nan,1,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_0.5fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF. NAVIGATOR'}",true,0.0,nan,nan,1,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_1.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF. NAVIGATOR'}",true,nan,nan,nan,1,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_2.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF. NAVIGATOR'}",true,nan,nan,nan,1,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_4.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF. NAVIGATOR'}",true,nan,nan,nan,1,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_8.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Artist', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR LAVA DIAF. NAVIGATOR'}",true,nan,nan,nan,1,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,volume_auroc,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'B', 'series_description': 'WATER: COR DIAFRAGMA T1 LAVA PRE abd'}",true,nan,nan,nan,1,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,ap,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'B', 'series_description': 'WATER: COR DIAFRAGMA T1 LAVA PRE abd'}",true,nan,nan,nan,1,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,brier,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'B', 'series_description': 'WATER: COR DIAFRAGMA T1 LAVA PRE abd'}",true,5.4072928096248786e-05,5.4072928096248786e-05,5.4072928096248786e-05,1,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,ece,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'B', 'series_description': 'WATER: COR DIAFRAGMA T1 LAVA PRE abd'}",true,0.0073534296825528145,0.0073534296825528145,0.0073534296825528145,1,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_0.125fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'B', 'series_description': 'WATER: COR DIAFRAGMA T1 LAVA PRE abd'}",true,0.0,nan,nan,1,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_0.25fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'B', 'series_description': 'WATER: COR DIAFRAGMA T1 LAVA PRE abd'}",true,0.0,nan,nan,1,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_0.5fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'B', 'series_description': 'WATER: COR DIAFRAGMA T1 LAVA PRE abd'}",true,0.0,nan,nan,1,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_1.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'B', 'series_description': 'WATER: COR DIAFRAGMA T1 LAVA PRE abd'}",true,nan,nan,nan,1,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_2.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'B', 'series_description': 'WATER: COR DIAFRAGMA T1 LAVA PRE abd'}",true,nan,nan,nan,1,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_4.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'B', 'series_description': 'WATER: COR DIAFRAGMA T1 LAVA PRE abd'}",true,nan,nan,nan,1,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_8.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'B', 'series_description': 'WATER: COR DIAFRAGMA T1 LAVA PRE abd'}",true,nan,nan,nan,1,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,volume_auroc,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR DIAFR LAVA EXP'}",true,nan,nan,nan,1,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,ap,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR DIAFR LAVA EXP'}",true,nan,nan,nan,1,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,brier,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR DIAFR LAVA EXP'}",true,0.00013717497456579384,0.00013717497456579384,0.00013717497456579384,1,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,ece,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR DIAFR LAVA EXP'}",true,0.011712172068655491,0.011712172068655491,0.011712172068655491,1,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_0.125fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR DIAFR LAVA EXP'}",true,0.0,nan,nan,1,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_0.25fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR DIAFR LAVA EXP'}",true,0.0,nan,nan,1,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_0.5fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR DIAFR LAVA EXP'}",true,0.0,nan,nan,1,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_1.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR DIAFR LAVA EXP'}",true,nan,nan,nan,1,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_2.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR DIAFR LAVA EXP'}",true,nan,nan,nan,1,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_4.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR DIAFR LAVA EXP'}",true,nan,nan,nan,1,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_8.0fp,cv_pooled,,scanner_model,"{'manufacturer': 'GE', 'model': 'SIGNA Explorer', 'magnetic_field_strength_t': 1.5, 'variant': 'A', 'series_description': 'WATER: COR DIAFR LAVA EXP'}",true,nan,nan,nan,1,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,volume_auroc,cv_pooled,,variant,unknown,true,0.8473255813953489,0.8062771061380931,0.8860318301418734,486,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,ap,cv_pooled,,variant,unknown,true,0.5501358483328969,0.441152756158081,0.6543594429811409,486,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,brier,cv_pooled,,variant,unknown,true,0.16456500805741284,0.13128414149020678,0.19740198791251265,486,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,ece,cv_pooled,,variant,unknown,true,0.1548156188628464,0.12055211123316202,0.18996982346985913,486,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_0.125fp,cv_pooled,,variant,unknown,true,0.38372093023255816,0.2894657577679138,0.5057471264367817,486,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_0.25fp,cv_pooled,,variant,unknown,true,0.5,0.4166432584269663,0.6250801282051281,486,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_0.5fp,cv_pooled,,variant,unknown,true,0.7441860465116279,0.6219087681383143,0.82927522172949,486,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_1.0fp,cv_pooled,,variant,unknown,true,1.0,1.0,1.0,486,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_2.0fp,cv_pooled,,variant,unknown,true,1.0,1.0,1.0,486,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_4.0fp,cv_pooled,,variant,unknown,true,1.0,1.0,1.0,486,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_8.0fp,cv_pooled,,variant,unknown,true,1.0,1.0,1.0,486,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,volume_auroc,cv_pooled,,slice_thickness_bin,unknown,true,0.8473255813953489,0.8062771061380931,0.8860318301418734,486,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,ap,cv_pooled,,slice_thickness_bin,unknown,true,0.5501358483328969,0.441152756158081,0.6543594429811409,486,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,brier,cv_pooled,,slice_thickness_bin,unknown,true,0.16456500805741284,0.13128414149020678,0.19740198791251265,486,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,ece,cv_pooled,,slice_thickness_bin,unknown,true,0.1548156188628464,0.12055211123316202,0.18996982346985913,486,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_0.125fp,cv_pooled,,slice_thickness_bin,unknown,true,0.38372093023255816,0.2894657577679138,0.5057471264367817,486,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_0.25fp,cv_pooled,,slice_thickness_bin,unknown,true,0.5,0.4166432584269663,0.6250801282051281,486,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_0.5fp,cv_pooled,,slice_thickness_bin,unknown,true,0.7441860465116279,0.6219087681383143,0.82927522172949,486,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_1.0fp,cv_pooled,,slice_thickness_bin,unknown,true,1.0,1.0,1.0,486,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_2.0fp,cv_pooled,,slice_thickness_bin,unknown,true,1.0,1.0,1.0,486,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_4.0fp,cv_pooled,,slice_thickness_bin,unknown,true,1.0,1.0,1.0,486,0,cc8b313
+cv_2026_04_29_213353_cc8b313,cv,sens_at_8.0fp,cv_pooled,,slice_thickness_bin,unknown,true,1.0,1.0,1.0,486,0,cc8b313

@@ -1,0 +1,16 @@
+{
+  "run_id": "holdout_2026_04_29_230040_cc8b313",
+  "started_at": "2026-04-29T23:00:40+00:00",
+  "ckpts_used": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "use_gru": false,
+  "code_version": "cc8b313",
+  "experiment_name": "baseline-rtmdet-p2-retry",
+  "experiment_uuid": "d25975e4-a1b1-484e-8b38-dec75048f283",
+  "eval_ckpt": "best"
+}

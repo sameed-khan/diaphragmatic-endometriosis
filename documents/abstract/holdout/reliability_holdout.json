@@ -1,0 +1,78 @@
+{
+  "run_id": "holdout_2026_04_29_230040_cc8b313",
+  "entrypoint": "holdout",
+  "fold": null,
+  "n_bins": 10,
+  "curve": [
+    {
+      "bin_low": 0.0,
+      "bin_high": 0.1,
+      "mean_pred": NaN,
+      "frac_pos": NaN,
+      "count": 0
+    },
+    {
+      "bin_low": 0.1,
+      "bin_high": 0.2,
+      "mean_pred": 0.169921875,
+      "frac_pos": 0.0,
+      "count": 28
+    },
+    {
+      "bin_low": 0.2,
+      "bin_high": 0.30000000000000004,
+      "mean_pred": 0.2471595177283654,
+      "frac_pos": 0.019230769230769232,
+      "count": 52
+    },
+    {
+      "bin_low": 0.30000000000000004,
+      "bin_high": 0.4,
+      "mean_pred": 0.3324991861979167,
+      "frac_pos": 0.25,
+      "count": 24
+    },
+    {
+      "bin_low": 0.4,
+      "bin_high": 0.5,
+      "mean_pred": 0.4423828125,
+      "frac_pos": 0.6666666666666666,
+      "count": 6
+    },
+    {
+      "bin_low": 0.5,
+      "bin_high": 0.6000000000000001,
+      "mean_pred": 0.548828125,
+      "frac_pos": 0.875,
+      "count": 8
+    },
+    {
+      "bin_low": 0.6000000000000001,
+      "bin_high": 0.7000000000000001,
+      "mean_pred": 0.623046875,
+      "frac_pos": 1.0,
+      "count": 4
+    },
+    {
+      "bin_low": 0.7000000000000001,
+      "bin_high": 0.8,
+      "mean_pred": NaN,
+      "frac_pos": NaN,
+      "count": 0
+    },
+    {
+      "bin_low": 0.8,
+      "bin_high": 0.9,
+      "mean_pred": NaN,
+      "frac_pos": NaN,
+      "count": 0
+    },
+    {
+      "bin_low": 0.9,
+      "bin_high": 1.0,
+      "mean_pred": NaN,
+      "frac_pos": NaN,
+      "count": 0
+    }
+  ]
+}

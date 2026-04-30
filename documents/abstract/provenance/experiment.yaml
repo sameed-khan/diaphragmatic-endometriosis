@@ -1,0 +1,166 @@
+uuid: d25975e4-a1b1-484e-8b38-dec75048f283
+name: baseline-rtmdet-p2-retry
+description: Retry of baseline_rtmdet_p2 with precision=32-true and max_epochs=5.
+  Used to (a) re-train folds 3 and 4 cleanly after fp16 divergence in the original
+  run, and (b) host a 5-fold ensemble whose other 3 fold ckpts are copied in from
+  the original run. deep_eval and HNM run every epoch (after warmup) for visibility.
+tags:
+  phase: '1'
+  head: rtmdet
+  backbone: convnext_tiny
+  p2: 'true'
+  precision: fp32
+  purpose: retry
+paths:
+  data_root: data
+  cache_root: cache/v1
+  runs_root: runs
+  lesion_bank: null
+model:
+  backbone_name: convnext_tiny.fb_in22k
+  in_channels: 5
+  fpn_channels: 256
+  fpn_strides:
+  - 4
+  - 8
+  - 16
+  - 32
+  head_n_classes: 1
+  head_stacked_convs: 2
+  head_feat_channels: 256
+  aux_seg_channels: 64
+  aux_seg_target_size: 384
+training:
+  max_epochs: 5
+  batch_size: 8
+  num_workers: 8
+  base_lr: 0.0002
+  min_lr: 1.0e-06
+  weight_decay: 0.05
+  warmup_epochs: 1
+  aux_seg_weight: 0.3
+  ema_decay: 0.999
+  precision: 32-true
+  gradient_clip_val: 1.0
+  log_every_n_steps: 10
+  target_input_shape:
+  - 384
+  - 160
+  - 384
+  slice_window: 5
+sampler:
+  epoch_mode: fixed_count
+  samples_per_epoch: 6000
+  pos_frac_start: 0.5
+  pos_frac_end: 0.25
+  decay_epochs: 30
+  neg_in_pos_vol_share: 0.5
+  hard_pool_substitution_rate: 0.3
+  hard_pool_start_epoch: 1
+  deep_eval_refresh_every_epochs: 1
+  deep_eval_start_epoch: 2
+  score_ema_decay: 0.9
+  score_ema_warmup_epochs: 2
+  score_ema_update_every_n_steps: 1
+  hard_pool_top_k: 1000
+augmentation:
+  paste:
+    p_any_paste: 0.5
+    n_paste_sigma: 1.0
+    n_paste_max: 7
+    site_local_std_threshold: 2.0
+    overlap_buffer_voxels: 0
+    max_paste_attempts: 20
+    max_oob_clip_frac: 0.25
+  geometric:
+    rotation_deg: 10.0
+    scale_min: 0.9
+    scale_max: 1.1
+    translation_frac: 0.05
+    elastic_sigma: 2.0
+    elastic_control_points: 8
+    p_elastic: 0.5
+  intensity:
+    gamma_min: 0.8
+    gamma_max: 1.2
+    bias_min: 0.9
+    bias_max: 1.1
+    noise_sigma: 0.01
+  skip_subpixel_voxel_threshold: 2
+gru:
+  input_dim: 768
+  hidden_dim: 128
+  num_layers: 1
+  bidirectional: true
+  dropout_input: 0.3
+  epochs: 20
+  lr: 0.001
+  weight_decay: 0.01
+  batch_size: 16
+  top_k: 5
+  aux_loss_weight: 0.1
+eval:
+  use_gru: true
+  bootstrap_n: 1000
+  bootstrap_seed: 42
+  large_threshold_grid:
+  - 0.01
+  - 0.03
+  - 0.05
+  - 0.1
+  small_threshold_grid:
+  - 0.1
+  - 0.2
+  - 0.3
+  - 0.4
+  - 0.5
+  box_size_split_mm: 10.0
+  wbf_iou_threshold: 0.4
+  wbf_skip_box_threshold: 0.001
+  froc_fp_points:
+  - 0.125
+  - 0.25
+  - 0.5
+  - 1.0
+  - 2.0
+  - 4.0
+  - 8.0
+  inference_batch_size: 16
+  stratify_keys:
+  - scanner_model
+  - variant
+  - slice_thickness_bin
+  eval_ckpt: best
+  emit_call_jsonl: true
+logging:
+  file:
+    level_console: INFO
+    level_file: INFO
+    rotate_max_bytes: 50000000
+    rotate_backups: 3
+  wandb:
+    enabled: true
+    project: diaphragmatic-endometriosis
+    entity: null
+    experiment_name: null
+    run_name: null
+    group: baseline-cv-retry
+    tags: []
+    mode: online
+    log_system_metrics: true
+    upload_checkpoints: true
+    upload_eval_reports: true
+    upload_viz_artifacts: true
+    upload_hard_pool_snapshots: false
+  viz:
+    log_during_training: false
+    log_every_n_epochs: 0
+    n_train_predictions_logged: 8
+    sample_tp_per_fold: 20
+    sample_fp_per_fold: 20
+    sample_fn_per_fold: 20
+  aug:
+    log_samples: epoch0
+    n_samples: 8
+  log_every_n_steps: 10
+seed: 42

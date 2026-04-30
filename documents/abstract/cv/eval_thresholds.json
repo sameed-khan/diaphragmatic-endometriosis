@@ -1,0 +1,31 @@
+{
+  "run_id": "cv_2026_04_29_202107_cc8b313",
+  "per_fold_thresholds": {
+    "0": {
+      "large": 0.01,
+      "small": 0.1
+    },
+    "1": {
+      "large": 0.01,
+      "small": 0.1
+    },
+    "2": {
+      "large": 0.01,
+      "small": 0.1
+    },
+    "3": {
+      "large": 0.01,
+      "small": 0.1
+    },
+    "4": {
+      "large": 0.01,
+      "small": 0.1
+    }
+  },
+  "ensemble_threshold": {
+    "large": 0.01,
+    "small": 0.1
+  },
+  "tuning_policy": "cross_fold_leave_one_out",
+  "froc_ci_note": "sens@FP CIs are computed from the per-volume max-score bootstrap (approximation); the point estimate uses the lesion-level detection-map sweep with GT masks."
+}
